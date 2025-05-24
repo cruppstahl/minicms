@@ -5,15 +5,15 @@
 [x] read authors.yaml - must not be empty
 [x] read global configuration file
 [x] use cmd line arguments to overwrite config values
-[ ] move everything to a github repository
+[x] move everything to a github repository
 
-[ ] build all routes to the directories in "/content"
-[ ] also read the metadata.yaml files in each directory, and a list of files
+[x] read files and .yaml metadata in each directory, descend recursively
     (do not read the files though)
+[x] dynamically build all routes to the directories in "/content"
 [ ] build (html) page for a file on demand and in case it was not yet created
 [ ] assemble the layout (header and footer)
 [ ] use picocss for a basic layout
-[ ] default index page shows all posts
+[ ] default index page shows all posts (configurable!)
 [ ] "/" forwards to the index page
 
 [ ] if a file was updated, i.e. has a newer timestamp (and different checksum):

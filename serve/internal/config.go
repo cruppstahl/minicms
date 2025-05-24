@@ -2,7 +2,6 @@ package internal
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -32,6 +31,7 @@ func printHelp() {
 }
 
 func ReadConfigYaml(context Context, filePath string) (Context, error) {
+	context.Config.FilePath = filePath
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return Context{}, err
@@ -90,10 +90,6 @@ func ParseCommandLineArguments() (Config, error) {
 			config.DataDirectory = arg
 		}
 	}
-
-	fmt.Println("port:", config.Server.Port)
-	fmt.Println("hostname:", config.Server.Hostname)
-	fmt.Println("directory:", config.DataDirectory)
 
 	if help {
 		printHelp()

@@ -14,8 +14,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize context: %v", err)
 	}
-	internal.SetupRoutes(router, context)
-	if err := router.Run(":" + strconv.Itoa(context.Config.Server.Port)); err != nil {
+
+	err = internal.SetupRoutes(router, &context)
+	if err != nil {
+		log.Fatalf("Failed to set up routes: %v", err)
+	}
+
+	internal.PrettyPrint(context)
+
+	err = router.Run(":" + strconv.Itoa(context.Config.Server.Port))
+	if err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}
 }

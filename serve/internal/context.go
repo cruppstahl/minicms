@@ -5,8 +5,9 @@ import (
 )
 
 type Context struct {
-	Authors Authors
-	Config  Config
+	Authors  Authors
+	Config   Config
+	DataTree DataTree
 }
 
 func InitializeContext() (Context, error) {
