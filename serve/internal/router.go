@@ -11,7 +11,7 @@ import (
 )
 
 type File struct {
-	Path      string
+	LocalPath string
 	Title     string
 	Author    string
 	Tags      []string
@@ -22,11 +22,11 @@ type File struct {
 }
 
 type Directory struct {
-	Path        string
+	LocalPath   string
 	Title       string `yaml:"title"`
 	CssFile     string `yaml:"cssfile"`
-	Directories []Directory
-	Files       []File
+	Directories map[string]Directory
+	Files       map[string]File
 }
 
 type DataTree struct {
@@ -36,7 +36,7 @@ type DataTree struct {
 
 func readDirectory(path string, context *Context) (Directory, error) {
 	var directory Directory
-	directory.Path = path
+	directory.LocalPath = path
 
 	// Construct the path to metadata.yaml
 	metadataPath := filepath.Join(path, "metadata.yaml")
@@ -61,8 +61,8 @@ func readDirectory(path string, context *Context) (Directory, error) {
 		return Directory{}, err
 	}
 
-	directory.Directories = []Directory{}
-	directory.Files = []File{}
+	directory.Directories = make(map[string]Directory)
+	directory.Files = make(map[string]File)
 
 	// Iterate over the directory entries
 	for _, entry := range dirEntries {
@@ -80,7 +80,7 @@ func readDirectory(path string, context *Context) (Directory, error) {
 				log.Printf("Failed to read subdirectory %s: %v", subDirPath, err)
 				continue
 			}
-			directory.Directories = append(directory.Directories, subDir)
+			directory.Directories[entry.Name()] = subDir
 		} else {
 			// Ignore file unless the extension is ".md", ".txt", or ".html"
 			ext := strings.ToLower(filepath.Ext(entry.Name()))
@@ -93,9 +93,9 @@ func readDirectory(path string, context *Context) (Directory, error) {
 
 			// Create a File struct and populate its fields
 			file := File{
-				Path:   filePath,
-				Title:  strings.TrimSuffix(entry.Name(), ext),
-				Format: strings.TrimLeft(ext, "."),
+				LocalPath: filePath,
+				Title:     strings.TrimSuffix(entry.Name(), ext),
+				Format:    strings.TrimLeft(ext, "."),
 			}
 
 			// Check if the file has a corresponding .yaml file for metadata
@@ -112,7 +112,8 @@ func readDirectory(path string, context *Context) (Directory, error) {
 			}
 
 			// Append the file to the directory's Files slice
-			directory.Files = append(directory.Files, file)
+			base := filepath.Base(filePath)
+			directory.Files[strings.TrimSuffix(base, ext)] = file
 		}
 	}
 
@@ -124,7 +125,7 @@ func addRoute(router *gin.Engine, directory *Directory, level int, context *Cont
 	// not for the root directory or nested subdirectories
 	if level == 1 {
 		// Create a route based on the file's path
-		routePath := strings.TrimPrefix(directory.Path, context.Config.SiteDirectory+"/content/")
+		routePath := strings.TrimPrefix(directory.LocalPath, context.Config.SiteDirectory+"/content/")
 
 		// Define the handler function for this route
 		handlerFunc := func(c *gin.Context) {
@@ -138,7 +139,7 @@ func addRoute(router *gin.Engine, directory *Directory, level int, context *Cont
 	// Go through each file in the directory and add a route for it
 	for _, file := range directory.Files {
 		// Create a route for the file
-		fileRoutePath := strings.TrimPrefix(file.Path, context.Config.SiteDirectory+"/content/")
+		fileRoutePath := strings.TrimPrefix(file.LocalPath, context.Config.SiteDirectory+"/content/")
 		fileRoutePath = strings.TrimSuffix(fileRoutePath, filepath.Ext(fileRoutePath)) // Remove the file extension
 		fileRoutePath = strings.ReplaceAll(fileRoutePath, "\\", "/")                   // Ensure forward slashes for URLs
 		router.GET("/"+fileRoutePath, func(c *gin.Context) {
@@ -147,10 +148,10 @@ func addRoute(router *gin.Engine, directory *Directory, level int, context *Cont
 
 			file, err := GetFile(c.Request.URL.Path, context)
 			if err != nil {
-				c.JSON(500, gin.H{
-					"error": "Failed to retrieve file",
-				})
 				log.Printf("Failed to get file for path %s: %v", c.Request.URL.Path, err)
+				c.HTML(500, "error.html", gin.H{
+					"message": "Internal Server Error",
+				})
 				return
 			}
 

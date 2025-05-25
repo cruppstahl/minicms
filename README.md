@@ -10,9 +10,9 @@
 [x] dynamically build all routes to the directories in "/content"
 [x] Bug: do not create routes for subdirectories (e.g. /blog/2025)
 [x] Bug: all URLs return the same content (post3.html)
-[ ] build (html) page for a file on demand and in case it was not yet created
-[ ] store the generated file in a cache
-[ ] fetch the generated file from a cache
+[x] build page for a file on demand and in case it was not yet created
+[x] store the generated file in a cache
+[x] fetch the generated file from a cache
 
 !!!
 !!! Bug: http://localhost:8080//blog/2025/01-post1 fails (two slashes!)
@@ -20,7 +20,7 @@
 [ ] assemble the layout (header and footer)
 [ ] use picocss for a basic layout
 [ ] default index page shows all posts (configurable!)
-[ ] "/" forwards to the index page
+[ ] "/" forwards to the index page (configurable!)
 
 [ ] if a file was updated, i.e. has a newer timestamp (and different checksum):
     rebuild it (but not more than once per minute)
