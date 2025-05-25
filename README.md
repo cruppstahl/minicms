@@ -10,16 +10,27 @@
 [x] read files and .yaml metadata in each directory, descend recursively
     (do not read the files though)
 [x] dynamically build all routes to the directories in "/content"
+
+!!!
+!!! Bug: alle URLs geben die selben Daten zurück (post3.html)
+
+!!!
+!!! Evtl ist es einfacher wenn die Verzeichnisse/Dateien nicht in einer Baum-
+!!! struktur gespeichert werden, sondern in einer einfachen map mit dem
+!!! URI als key
+
 [ ] build (html) page for a file on demand and in case it was not yet created
+[ ] store the generated file in a cache
+
 [ ] assemble the layout (header and footer)
 [ ] use picocss for a basic layout
 [ ] default index page shows all posts (configurable!)
 [ ] "/" forwards to the index page
 
 [ ] if a file was updated, i.e. has a newer timestamp (and different checksum):
-    rebuild it
+    rebuild it (but not more than once per minute)
 [ ] if a file or directory was added then support the route
 [ ] if a file or directory was removed then drop the route
-[ ] limit posts based on quota (number of files and of images)
+
 [ ] self-host the documentation
 [ ] migrate crupp.de to the new solution

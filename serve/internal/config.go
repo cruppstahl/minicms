@@ -53,6 +53,8 @@ func ParseCommandLineArguments() (Config, error) {
 		},
 	}
 
+	config.DataDirectory = "../data"
+
 	help := false
 	run := false
 
@@ -96,9 +98,10 @@ func ParseCommandLineArguments() (Config, error) {
 		os.Exit(0)
 	}
 
-	if !run {
-		log.Fatalf("Invalid command. Use `help` for usage information.")
-	}
+	/*
+		if !run {
+			log.Fatalf("Invalid command. Use `help` for usage information.")
+		}*/
 
 	if run && config.DataDirectory == "" {
 		log.Fatalf("Missing parameter <directory>")
