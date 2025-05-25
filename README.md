@@ -17,13 +17,14 @@
 [x] assemble the layout (header and footer)
 [x] return html instead of json, with the correct mimetype
 [x] use picocss for a basic layout
-[ ] use go template functions to complete header and footer
+[x] use go template functions to complete header and footer
 
 !!!
 !!! Bug: http://localhost:8080//blog/2025/01-post1 fails (two slashes!)
 
-[ ] default index page shows all posts (configurable!)
 [ ] "/" forwards to the index page (configurable!)
+[ ] default index page shows all posts (configurable!)
+[ ] only cache this for a short time
 
 [ ] if a file was updated, i.e. has a newer timestamp (and different checksum):
     rebuild it (but not more than once per minute)

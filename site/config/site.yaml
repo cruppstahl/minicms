@@ -2,3 +2,4 @@ server:
   port: 8080
   hostname: crupp.de
   title: Miniblog
+  description: This is a really small cms

@@ -11,9 +11,10 @@ import (
 )
 
 type Server struct {
-	Port     int    `yaml:"port"`
-	Hostname string `yaml:"hostname"`
-	Title    string `yaml:"title"`
+	Port        int    `yaml:"port"`
+	Hostname    string `yaml:"hostname"`
+	Title       string `yaml:"title"`
+	Description string `yaml:"description"`
 }
 
 type Config struct {
@@ -49,9 +50,10 @@ func ReadConfigYaml(context Context, filePath string) (Context, error) {
 func ParseCommandLineArguments() (Config, error) {
 	var config = Config{
 		Server: Server{
-			Port:     8080,
-			Hostname: "localhost",
-			Title:    "Miniblog Server",
+			Port:        8080,
+			Hostname:    "localhost",
+			Title:       "Miniblog Server",
+			Description: "",
 		},
 	}
 

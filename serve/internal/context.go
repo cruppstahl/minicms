@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"text/template"
 )
 
 type Context struct {
@@ -95,6 +96,28 @@ func fetchFileContent(file *File, context *Context) error {
 	return nil
 }
 
+func applyTemplate(file *File, context *Context) error {
+	tmpl, err := template.New(file.LocalPath).Parse(file.Content)
+	if err != nil {
+		log.Printf("failed to parse template for %s: %s", file.LocalPath, err)
+		return err
+	}
+	var output strings.Builder
+	var vars = map[string]interface{}{
+		"Title":       context.Config.Server.Title,
+		"Description": context.Config.Server.Description,
+		"Author":      context.Users.Users[0].Name, // Assuming at least one user exists
+	}
+	err = tmpl.Execute(&output, vars)
+	if err != nil {
+		log.Printf("failed to execute template for %s: %s", file.LocalPath, err)
+		return err
+	}
+
+	file.Content = output.String()
+	return nil
+}
+
 func GetFile(path string, context *Context) (File, error) {
 	normalizedPath := normalizePath(path)
 	// If the file is in the cache then fetch and build it
@@ -111,6 +134,9 @@ func GetFile(path string, context *Context) (File, error) {
 		if err != nil {
 			return File{}, err
 		}
+
+		// ignore errors, just display the template as is if it cannot be applied
+		_ = applyTemplate(&file, context)
 
 		context.DataCache[normalizedPath] = file
 	}
