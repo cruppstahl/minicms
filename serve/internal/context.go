@@ -5,7 +5,7 @@ import (
 )
 
 type Context struct {
-	Authors  Authors
+	Users    Users
 	Config   Config
 	DataTree DataTree
 }
@@ -21,15 +21,15 @@ func InitializeContext() (Context, error) {
 	}
 
 	// read config.yaml
-	configFilePath := fmt.Sprintf("%s/config.yaml", context.Config.DataDirectory)
+	configFilePath := fmt.Sprintf("%s/config/site.yaml", context.Config.SiteDirectory)
 	context, err = ReadConfigYaml(context, configFilePath)
 	if err != nil {
 		return context, err
 	}
 
-	// read authors.yaml
-	authorsFilePath := fmt.Sprintf("%s/authors.yaml", context.Config.DataDirectory)
-	context, err = ReadAuthorsYaml(context, authorsFilePath)
+	// read users.yaml
+	authorsFilePath := fmt.Sprintf("%s/config/users.yaml", context.Config.SiteDirectory)
+	context, err = ReadUsersYaml(context, authorsFilePath)
 	if err != nil {
 		return context, err
 	}

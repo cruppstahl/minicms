@@ -122,7 +122,7 @@ func readDirectory(path string, context *Context) (Directory, error) {
 func addRoute(router *gin.Engine, directory *Directory, isInitial bool, context *Context) {
 	if !isInitial {
 		// Create a route based on the file's path
-		routePath := strings.TrimPrefix(directory.Path, context.Config.DataDirectory+"/content/")
+		routePath := strings.TrimPrefix(directory.Path, context.Config.SiteDirectory+"/content/")
 
 		// Define the handler function for this route
 		handlerFunc := func(c *gin.Context) {
@@ -136,7 +136,7 @@ func addRoute(router *gin.Engine, directory *Directory, isInitial bool, context 
 	// Go through each file in the directory and add a route for it
 	for _, file := range directory.Files {
 		// Create a route for the file
-		fileRoutePath := strings.TrimPrefix(file.Path, context.Config.DataDirectory+"/content/")
+		fileRoutePath := strings.TrimPrefix(file.Path, context.Config.SiteDirectory+"/content/")
 		fileRoutePath = strings.TrimSuffix(fileRoutePath, filepath.Ext(fileRoutePath)) // Remove the file extension
 		fileRoutePath = strings.ReplaceAll(fileRoutePath, "\\", "/")                   // Ensure forward slashes for URLs
 		router.GET("/"+fileRoutePath, func(c *gin.Context) {
@@ -158,7 +158,7 @@ func addRoute(router *gin.Engine, directory *Directory, isInitial bool, context 
 }
 
 func ReadDataTree(context *Context) error {
-	var root = context.Config.DataDirectory
+	var root = context.Config.SiteDirectory
 	var err error
 	context.DataTree.Root = root
 

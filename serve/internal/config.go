@@ -13,11 +13,12 @@ import (
 type Server struct {
 	Port     int    `yaml:"port"`
 	Hostname string `yaml:"hostname"`
+	Title    string `yaml:"title"`
 }
 
 type Config struct {
 	FilePath      string
-	DataDirectory string
+	SiteDirectory string
 	Server        Server `yaml:"server"`
 }
 
@@ -50,10 +51,11 @@ func ParseCommandLineArguments() (Config, error) {
 		Server: Server{
 			Port:     8080,
 			Hostname: "localhost",
+			Title:    "Miniblog Server",
 		},
 	}
 
-	config.DataDirectory = "../data"
+	config.SiteDirectory = "../site"
 
 	help := false
 	run := false
@@ -89,7 +91,7 @@ func ParseCommandLineArguments() (Config, error) {
 		} else if arg == "run" {
 			run = true
 		} else {
-			config.DataDirectory = arg
+			config.SiteDirectory = arg
 		}
 	}
 
@@ -103,7 +105,7 @@ func ParseCommandLineArguments() (Config, error) {
 			log.Fatalf("Invalid command. Use `help` for usage information.")
 		}*/
 
-	if run && config.DataDirectory == "" {
+	if run && config.SiteDirectory == "" {
 		log.Fatalf("Missing parameter <directory>")
 	}
 
