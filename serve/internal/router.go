@@ -119,8 +119,10 @@ func readDirectory(path string, context *Context) (Directory, error) {
 	return directory, nil
 }
 
-func addRoute(router *gin.Engine, directory *Directory, isInitial bool, context *Context) {
-	if !isInitial {
+func addRoute(router *gin.Engine, directory *Directory, level int, context *Context) {
+	// Only create routes for /blog, /docs, /shop etc. directories,
+	// not for the root directory or nested subdirectories
+	if level == 1 {
 		// Create a route based on the file's path
 		routePath := strings.TrimPrefix(directory.Path, context.Config.SiteDirectory+"/content/")
 
@@ -142,6 +144,7 @@ func addRoute(router *gin.Engine, directory *Directory, isInitial bool, context 
 		router.GET("/"+fileRoutePath, func(c *gin.Context) {
 			// Handler function for the file route
 			c.JSON(200, gin.H{
+				"path":    c.Request.URL.Path,
 				"title":   file.Title,
 				"author":  file.Author,
 				"tags":    file.Tags,
@@ -153,7 +156,7 @@ func addRoute(router *gin.Engine, directory *Directory, isInitial bool, context 
 
 	// Go through each subdirectory, call this function recursively
 	for _, subDir := range directory.Directories {
-		addRoute(router, &subDir, false, context)
+		addRoute(router, &subDir, level+1, context)
 	}
 }
 
@@ -174,7 +177,7 @@ func SetupRoutes(router *gin.Engine, context *Context) error {
 	}
 
 	// Walk through the data tree and set up all the routes
-	addRoute(router, &context.DataTree.Directory, true, context)
+	addRoute(router, &context.DataTree.Directory, 0, context)
 	// router.GET("/", handlers.GetRoot)
 	// router.GET("/posts", handlers.GetPosts)
 	// router.GET("/posts/index", handlers.GetPosts)
