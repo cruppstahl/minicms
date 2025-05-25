@@ -142,6 +142,18 @@ func addRoute(router *gin.Engine, directory *Directory, level int, context *Cont
 		fileRoutePath = strings.TrimSuffix(fileRoutePath, filepath.Ext(fileRoutePath)) // Remove the file extension
 		fileRoutePath = strings.ReplaceAll(fileRoutePath, "\\", "/")                   // Ensure forward slashes for URLs
 		router.GET("/"+fileRoutePath, func(c *gin.Context) {
+			// Don't forget type assertion when getting the connection from context.
+			context, _ := c.MustGet("context").(*Context)
+
+			file, err := GetFile(c.Request.URL.Path, context)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": "Failed to retrieve file",
+				})
+				log.Printf("Failed to get file for path %s: %v", c.Request.URL.Path, err)
+				return
+			}
+
 			// Handler function for the file route
 			c.JSON(200, gin.H{
 				"path":    c.Request.URL.Path,
@@ -175,6 +187,12 @@ func SetupRoutes(router *gin.Engine, context *Context) error {
 	if err != nil {
 		return err
 	}
+
+	// Store context in the router's gin context
+	router.Use(func(c *gin.Context) {
+		c.Set("context", context)
+		c.Next()
+	})
 
 	// Walk through the data tree and set up all the routes
 	addRoute(router, &context.DataTree.Directory, 0, context)

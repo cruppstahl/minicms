@@ -9,20 +9,13 @@
     (do not read the files though)
 [x] dynamically build all routes to the directories in "/content"
 [x] Bug: do not create routes for subdirectories (e.g. /blog/2025)
-
-!!!
-!!! Bug: alle URLs geben die selben Daten zurück (post3.html)
+[x] Bug: all URLs return the same content (post3.html)
+[ ] build (html) page for a file on demand and in case it was not yet created
+[ ] store the generated file in a cache
+[ ] fetch the generated file from a cache
 
 !!!
 !!! Bug: http://localhost:8080//blog/2025/01-post1 fails (two slashes!)
-
-!!!
-!!! Evtl ist es einfacher wenn die Verzeichnisse/Dateien nicht in einer Baum-
-!!! struktur gespeichert werden, sondern in einer einfachen map mit dem
-!!! URI als key
-
-[ ] build (html) page for a file on demand and in case it was not yet created
-[ ] store the generated file in a cache
 
 [ ] assemble the layout (header and footer)
 [ ] use picocss for a basic layout

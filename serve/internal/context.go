@@ -37,3 +37,11 @@ func InitializeContext() (Context, error) {
 	// Return the parsed data
 	return context, err
 }
+
+func GetFile(path string, context *Context) (File, error) {
+	return File{
+		Path:   path,
+		Title:  "title TODO",
+		Author: "author TODO",
+	}, nil
+}
