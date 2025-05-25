@@ -17,7 +17,7 @@ type File struct {
 	Tags      []string
 	ImagePath string
 	CssFile   string
-	Format    string
+	MimeType  string
 	Content   string
 }
 
@@ -95,7 +95,7 @@ func readDirectory(path string, context *Context) (Directory, error) {
 			file := File{
 				LocalPath: filePath,
 				Title:     strings.TrimSuffix(entry.Name(), ext),
-				Format:    strings.TrimLeft(ext, "."),
+				MimeType:  mimeType(strings.TrimLeft(ext, ".")),
 			}
 
 			// Check if the file has a corresponding .yaml file for metadata
@@ -118,6 +118,19 @@ func readDirectory(path string, context *Context) (Directory, error) {
 	}
 
 	return directory, nil
+}
+
+func mimeType(ext string) string {
+	switch ext {
+	case "md":
+		return "text/html" // Markdown files are served as HTML
+	case "txt":
+		return "text/plain"
+	case "html":
+		return "text/html"
+	default:
+		return "application/octet-stream" // Default MIME type for unknown files
+	}
 }
 
 func addRoute(router *gin.Engine, directory *Directory, level int, context *Context) {
@@ -155,15 +168,7 @@ func addRoute(router *gin.Engine, directory *Directory, level int, context *Cont
 				return
 			}
 
-			// Handler function for the file route
-			c.JSON(200, gin.H{
-				"path":    c.Request.URL.Path,
-				"title":   file.Title,
-				"author":  file.Author,
-				"tags":    file.Tags,
-				"format":  file.Format,
-				"content": file.Content,
-			})
+			c.Data(200, file.MimeType, []byte(file.Content))
 		})
 	}
 

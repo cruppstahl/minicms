@@ -80,14 +80,17 @@ func fetchMetadata(path string, dataTree DataTree) (File, error) {
 	}
 }
 
-func fetchFileContent(file *File) error {
+func fetchFileContent(file *File, context *Context) error {
+	header, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/header.html")
+	footer, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/footer.html")
+
 	// Read content from file.LocalPath and store it in file.Content
-	content, err := os.ReadFile(file.LocalPath)
+	body, err := os.ReadFile(file.LocalPath)
 	if err != nil {
 		log.Printf("failed to read file content for %s: %s", file.LocalPath, err)
 		return err
 	}
-	file.Content = string(content)
+	file.Content = string(header) + string(body) + string(footer)
 
 	return nil
 }
@@ -104,7 +107,7 @@ func GetFile(path string, context *Context) (File, error) {
 			return File{}, err
 		}
 
-		err = fetchFileContent(&file)
+		err = fetchFileContent(&file, context)
 		if err != nil {
 			return File{}, err
 		}

@@ -14,11 +14,14 @@
 [x] store the generated file in a cache
 [x] fetch the generated file from a cache
 
+[x] assemble the layout (header and footer)
+[x] return html instead of json, with the correct mimetype
+[x] use picocss for a basic layout
+[ ] use go template functions to complete header and footer
+
 !!!
 !!! Bug: http://localhost:8080//blog/2025/01-post1 fails (two slashes!)
 
-[ ] assemble the layout (header and footer)
-[ ] use picocss for a basic layout
 [ ] default index page shows all posts (configurable!)
 [ ] "/" forwards to the index page (configurable!)
 
