@@ -9,10 +9,11 @@ import (
 )
 
 type Context struct {
-	Users     Users
-	Config    Config
-	DataTree  DataTree
-	DataCache map[string]File
+	Users      Users
+	Config     Config
+	DataTree   DataTree
+	DataCache  map[string]File
+	Navigation Navigation
 }
 
 func InitializeContext() (Context, error) {
@@ -36,6 +37,13 @@ func InitializeContext() (Context, error) {
 	// read users.yaml
 	authorsFilePath := fmt.Sprintf("%s/config/users.yaml", context.Config.SiteDirectory)
 	context, err = ReadUsersYaml(context, authorsFilePath)
+	if err != nil {
+		return context, err
+	}
+
+	// read navigation.yaml
+	navigationFilePath := fmt.Sprintf("%s/config/navigation.yaml", context.Config.SiteDirectory)
+	context, err = ReadNavigationYaml(context, navigationFilePath)
 	if err != nil {
 		return context, err
 	}

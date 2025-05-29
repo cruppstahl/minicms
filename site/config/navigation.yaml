@@ -1,0 +1,17 @@
+main:
+  - name: "Home"
+    url: "/"
+  - name: "About"
+    url: "/about"
+  - name: "Docs"
+    url: "/docs"
+    children:
+      - name: "Getting Started"
+        url: "/docs/getting-started"
+      - name: "API Reference"
+        url: "/docs/api"
+  - name: "Blog"
+    url: "/blog"
+  - name: "Shop"
+    url: "/shop"
+
