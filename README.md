@@ -24,9 +24,12 @@
 
 [ ] use case: digital business cards
     [x] parse navigation.yaml into the Context structure
-    [ ] use it to build routes for the different directories and
-        their index{.html|.md|.txt}
-    [ ] as an alias, create an /index.html route as well
+        [x] for each top level item in the navigation: create a route
+        [x] repeat for each nested item (in the navigation)
+        [x] for each *file* in the navigation directory: create a route
+        [x] for each *subdir* in the navigation directory: create a route
+        [x] and store the meta-information in the navigation directory
+    [ ] DataTree is then no longer required
     [ ] site configuration has configuration about branding
     [ ] add routes for static files
     [ ] migrate crupp.de to the new solution

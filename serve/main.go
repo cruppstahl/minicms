@@ -20,7 +20,7 @@ func main() {
 		log.Fatalf("Failed to set up routes: %v", err)
 	}
 
-	internal.PrettyPrint(context)
+	// internal.PrettyPrint(context)
 
 	err = router.Run(":" + strconv.Itoa(context.Config.Server.Port))
 	if err != nil {
