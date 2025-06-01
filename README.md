@@ -19,21 +19,30 @@
 [x] use picocss for a basic layout
 [x] use go template functions to complete header and footer
 
-!!!
-!!! Bug: http://localhost:8080//blog/2025/01-post1 fails (two slashes!)
+[x] parse navigation.yaml into the Context structure
+    [x] for each top level item in the navigation: create a route
+    [x] repeat for each nested item (in the navigation)
+    [x] for each *file* in the navigation directory: create a route
+    [x] for each *subdir* in the navigation directory: create a route
+    [x] and store the meta-information in the navigation directory
+    [x] "/" in a directory redirects to the index page
+    [x] enforce absolute paths (urls and locals) in navigation.yaml
+[x] DataTree is then no longer required
+[x] Hide file extension in the route (e.g. /index.md -> /index)
 
-[ ] use case: digital business cards
-    [x] parse navigation.yaml into the Context structure
-        [x] for each top level item in the navigation: create a route
-        [x] repeat for each nested item (in the navigation)
-        [x] for each *file* in the navigation directory: create a route
-        [x] for each *subdir* in the navigation directory: create a route
-        [x] and store the meta-information in the navigation directory
-    [ ] DataTree is then no longer required
-    [ ] site configuration has configuration about branding
-    [ ] add routes for static files
-    [ ] migrate crupp.de to the new solution
-    [ ] build and deploy it (automate this step)
+[ ] site configuration has configuration about branding
+    [ ] add a favicon
+[ ] add route for static files
+
+[ ] migrate crupp.de to the new solution; objective is that this becomes
+    (with minor modifications) the default template for this use case!
+    [ ] add a /now page
+    [ ] add a default favicon
+    [ ] add the pdf (for downloading the CV)
+    [ ] really use templating to add links etc
+    [ ] automate the deployment, e.g. in a docker container
+    [ ] cmd line args ("create --template=business-card-01") then copy this
+        template to a new (clean!) subdirectory!
 
 [ ] use case: host technical documentation
     [ ] self-host the documentation

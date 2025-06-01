@@ -11,9 +11,8 @@ import (
 type Context struct {
 	Users      Users
 	Config     Config
-	DataTree   DataTree
-	DataCache  map[string]File
 	Navigation Navigation
+	DataCache  map[string]File
 }
 
 func InitializeContext() (Context, error) {
@@ -53,43 +52,14 @@ func InitializeContext() (Context, error) {
 }
 
 func normalizePath(path string) string {
-	// Normalize the path by removing leading and trailing slashes
-	// and converting backslashes to forward slashes
-	normalized := path
-	if len(normalized) > 0 && normalized[0] == '/' {
-		normalized = normalized[1:]
-	}
-	if len(normalized) > 0 && normalized[len(normalized)-1] == '/' {
-		normalized = normalized[:len(normalized)-1]
-	}
+	// Convert double slashes to single slashes
+	path = strings.ReplaceAll(path, "\\", "/")
 
 	// Also convert double slashes to single slashes
-	return strings.ReplaceAll(normalized, "//", "/")
+	return strings.ReplaceAll(path, "//", "/")
 }
 
-func fetchMetadata(path string, dataTree DataTree) (File, error) {
-	// Split normalizedPath into directories and filename, and look them up
-	// in the DataTree
-	directory := dataTree.Directory
-	dirs := strings.Split(path, "/")
-	for _, dir := range dirs[:len(dirs)-1] {
-		if subDir, ok := directory.Directories[dir]; ok {
-			directory = subDir
-		} else {
-			return File{}, fmt.Errorf("Directory not found: %s", dir)
-		}
-	}
-	filename := dirs[len(dirs)-1]
-	// Check if the file exists in the directory
-	if fileData, ok := directory.Files[filename]; ok {
-		// If the file exists, use its data
-		return fileData, nil
-	} else {
-		return File{}, fmt.Errorf("File not found: %s", filename)
-	}
-}
-
-func fetchFileContent(file *File, context *Context) error {
+func fetchFileBody(file *File, context *Context) (string, error) {
 	header, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/header.html")
 	footer, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/footer.html")
 
@@ -97,18 +67,16 @@ func fetchFileContent(file *File, context *Context) error {
 	body, err := os.ReadFile(file.LocalPath)
 	if err != nil {
 		log.Printf("failed to read file content for %s: %s", file.LocalPath, err)
-		return err
+		return "", err
 	}
-	file.Content = string(header) + string(body) + string(footer)
-
-	return nil
+	return string(header) + string(body) + string(footer), nil
 }
 
-func applyTemplate(file *File, context *Context) error {
-	tmpl, err := template.New(file.LocalPath).Parse(file.Content)
+func applyTemplate(body string, file *File, context *Context) (string, error) {
+	tmpl, err := template.New(file.LocalPath).Parse(body)
 	if err != nil {
 		log.Printf("failed to parse template for %s: %s", file.LocalPath, err)
-		return err
+		return "", err
 	}
 	var output strings.Builder
 	var vars = map[string]interface{}{
@@ -119,35 +87,33 @@ func applyTemplate(file *File, context *Context) error {
 	err = tmpl.Execute(&output, vars)
 	if err != nil {
 		log.Printf("failed to execute template for %s: %s", file.LocalPath, err)
-		return err
+		return "", err
 	}
 
-	file.Content = output.String()
-	return nil
+	return output.String(), nil
 }
 
-func GetFile(path string, context *Context) (File, error) {
+func GetFile(path string, context *Context) (*File, error) {
 	normalizedPath := normalizePath(path)
-	// If the file is in the cache then fetch and build it
-	var file File
-	var exists bool
-	var err error
-	if file, exists = context.DataCache[normalizedPath]; !exists {
-		file, err = fetchMetadata(normalizedPath, context.DataTree)
-		if err != nil {
-			return File{}, err
-		}
 
-		err = fetchFileContent(&file, context)
+	lookup, ok := context.Navigation.LookupIndex[normalizedPath]
+	if !ok {
+		return nil, fmt.Errorf("file not found: %s", normalizedPath)
+	}
+
+	// If the file is not cached then build it
+	if lookup.File.CachedContent == "" {
+		body, err := fetchFileBody(&lookup.File, context)
 		if err != nil {
-			return File{}, err
+			return nil, err
 		}
 
 		// ignore errors, just display the template as is if it cannot be applied
-		_ = applyTemplate(&file, context)
-
-		context.DataCache[normalizedPath] = file
+		body, err = applyTemplate(body, &lookup.File, context)
+		if err == nil {
+			lookup.File.CachedContent = body
+		}
 	}
 
-	return file, nil
+	return &lookup.File, nil
 }

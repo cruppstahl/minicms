@@ -11,26 +11,33 @@ import (
 )
 
 type Navigation struct {
-	FilePath string
-	Main     []NavigationItem `yaml:"main"`
+	FilePath    string
+	Tree        []NavigationItem `yaml:"main"`
+	LookupIndex map[string]LookupItem
+}
+
+type LookupItem struct {
+	NavigationItem NavigationItem // TODO annoying expensive copy, avoid it
+	Directory      Directory      // TODO this is already in NavigationItem
+	File           File           // TODO annoying expensive copy, avoid it
 }
 
 type NavigationItem struct {
 	LocalPath string           `yaml:"local-path"`
-	RoutePath string           `yaml:"url"`
+	Url       string           `yaml:"url"`
 	Children  []NavigationItem `yaml:"children,omitempty"`
 	Directory Directory
 }
 
 type File struct {
-	LocalPath string
-	Title     string
-	Author    string
-	Tags      []string
-	ImagePath string
-	CssFile   string
-	MimeType  string
-	Content   string
+	LocalPath     string
+	Title         string
+	Author        string
+	Tags          []string
+	ImagePath     string
+	CssFile       string
+	MimeType      string
+	CachedContent string
 }
 
 type Directory struct {
@@ -39,11 +46,6 @@ type Directory struct {
 	CssFile     string `yaml:"cssfile"`
 	Directories map[string]Directory
 	Files       map[string]File
-}
-
-type DataTree struct {
-	Root      string
-	Directory Directory
 }
 
 func readDirectory(localPath string, context *Context) (Directory, error) {
@@ -137,7 +139,7 @@ func mimeType(ext string) string {
 	case "md":
 		return "text/html" // Markdown files are served as HTML
 	case "txt":
-		return "text/plain"
+		return "text/html" // Same about text files
 	case "html":
 		return "text/html"
 	default:
@@ -145,19 +147,45 @@ func mimeType(ext string) string {
 	}
 }
 
-func ReadDataTree(context *Context) (DataTree, error) {
-	var root = context.Config.SiteDirectory
-	var dataTree DataTree
-	var err error
-	dataTree.Root = root
+func addLookupIndex(context *Context, url string, item LookupItem) {
+	// Add the LookupItem to the LookupIndex
+	_, exists := context.Navigation.LookupIndex[url]
+	if exists {
+		log.Fatalf("Duplicate URL found in LookupIndex: %s", url)
+	}
+	context.Navigation.LookupIndex[url] = item
+}
 
-	// Read the directory and populate the data tree
-	dataTree.Directory, err = readDirectory(root+"/content", context)
-	return dataTree, err
+func populateLookupIndex(item *NavigationItem, directory *Directory, url string, context *Context) {
+	// Create a lookup item for all files in the current directory
+	for _, file := range directory.Files {
+		// Create a LookupItem for the file
+		lookupItem := LookupItem{
+			NavigationItem: *item,
+			Directory:      *directory,
+			File:           file,
+		}
+		base := filepath.Base(file.LocalPath)
+		ext := strings.ToLower(filepath.Ext(base))
+		base = strings.TrimSuffix(base, ext)
+		addLookupIndex(context, filepath.Join(url, base), lookupItem)
+
+		// If this is the index file then use it as a default route for the directory
+		if base == "index" {
+			addLookupIndex(context, url+"/", lookupItem)
+		}
+	}
+
+	// Recursively populate the lookup index for child directories
+	for _, subDir := range directory.Directories {
+		base := filepath.Base(subDir.LocalPath)
+		populateLookupIndex(item, &subDir, filepath.Join(url, base), context)
+	}
 }
 
 func ReadNavigationYaml(context Context, path string) (Context, error) {
 	context.Navigation.FilePath = path
+	context.Navigation.LookupIndex = make(map[string]LookupItem)
 
 	// Read the file
 	data, err := os.ReadFile(path)
@@ -171,12 +199,12 @@ func ReadNavigationYaml(context Context, path string) (Context, error) {
 	}
 
 	// We need at least one main navigation item
-	if len(context.Navigation.Main) == 0 {
+	if len(context.Navigation.Tree) == 0 {
 		return Context{}, fmt.Errorf("no main navigation items found in %s", path)
 	}
 
 	// Go through each main navigation item and populate its Directory field
-	for i, item := range context.Navigation.Main {
+	for i, item := range context.Navigation.Tree {
 		// Set the LocalPath for the item
 		localPath := filepath.Join(context.Config.SiteDirectory, "content", item.LocalPath)
 		// Read the directory for this item
@@ -185,7 +213,21 @@ func ReadNavigationYaml(context Context, path string) (Context, error) {
 			return Context{}, fmt.Errorf("failed to read directory for navigation item %s: %w", item.LocalPath, err)
 		}
 		// Update the item in the context
-		context.Navigation.Main[i] = item
+		context.Navigation.Tree[i] = item
+	}
+
+	// Populate the LookupIndex with NavigationItem and Directory, and while we're at it,
+	// also enforce absolute paths for LocalPath and Url
+	for _, item := range context.Navigation.Tree {
+		if !filepath.IsAbs(item.LocalPath) {
+			return Context{}, fmt.Errorf("expected absolute path for %s", item.LocalPath)
+		}
+		if !filepath.IsAbs(item.Url) {
+			return Context{}, fmt.Errorf("expected absolute url for %s", item.Url)
+		}
+
+		// Create LookupItems for all Files in the Directory
+		populateLookupIndex(&item, &item.Directory, item.Url, &context)
 	}
 
 	// Return the parsed data
