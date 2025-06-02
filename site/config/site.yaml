@@ -3,3 +3,7 @@ server:
   hostname: crupp.de
   title: Miniblog
   description: This is a really small cms
+
+branding:
+  favicon: /assets/favicon.png
+

@@ -30,13 +30,15 @@
 [x] DataTree is then no longer required
 [x] Hide file extension in the route (e.g. /index.md -> /index)
 
-[ ] site configuration has configuration about branding
-    [ ] add a favicon
-[ ] add route for static files
+[x] add favicon to site configuration (under "branding")
+[x] add route for static files (router.Static("/static", "./local-assets")
+[ ] review templating - do we have enough data for a header/footer?
+[ ] remove Directory and File structure in Navigation
 
 [ ] migrate crupp.de to the new solution; objective is that this becomes
     (with minor modifications) the default template for this use case!
     [ ] add a /now page
+    [ ] update config, navigation.yaml
     [ ] add a default favicon
     [ ] add the pdf (for downloading the CV)
     [ ] really use templating to add links etc

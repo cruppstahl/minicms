@@ -36,5 +36,9 @@ func SetupRoutes(router *gin.Engine, context *Context) error {
 		addRoute(router, url)
 	}
 
+	// Add a static route
+	staticDir := context.Config.SiteDirectory + "/assets"
+	router.Static("/assets", staticDir)
+
 	return nil
 }

@@ -17,10 +17,15 @@ type Server struct {
 	Description string `yaml:"description"`
 }
 
+type Branding struct {
+	Favicon string `yaml:"favicon"`
+}
+
 type Config struct {
 	FilePath      string
 	SiteDirectory string
-	Server        Server `yaml:"server"`
+	Server        Server   `yaml:"server"`
+	Branding      Branding `yaml:"branding"`
 }
 
 func printHelp() {
@@ -54,6 +59,9 @@ func ParseCommandLineArguments() (Config, error) {
 			Hostname:    "localhost",
 			Title:       "Miniblog Server",
 			Description: "",
+		},
+		Branding: Branding{
+			Favicon: "/assets/favicon.png",
 		},
 	}
 

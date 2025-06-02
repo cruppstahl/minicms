@@ -83,6 +83,7 @@ func applyTemplate(body string, file *File, context *Context) (string, error) {
 		"Title":       context.Config.Server.Title,
 		"Description": context.Config.Server.Description,
 		"Author":      context.Users.Users[0].Name, // Assuming at least one user exists
+		"Favicon":     context.Config.Branding.Favicon,
 	}
 	err = tmpl.Execute(&output, vars)
 	if err != nil {
