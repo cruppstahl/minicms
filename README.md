@@ -33,21 +33,54 @@
 [x] add favicon to site configuration (under "branding")
 [x] add route for static files (router.Static("/static", "./local-assets")
 [ ] review templating - do we have enough data for a header/footer?
-[ ] remove Directory and File structure in Navigation
+	copy Navigation, (parts of)Config, Branding, Users
+	also copy relevant stuff from Directory, File (merge them - settings in
+	File have higher priority than those in Directory)
+	move custom css template (site.css) to Branding, use it in header.html
+	adjust header.html, footer.html
+[ ] remove Directory and File structure in Navigation; Directory is only
+	required from the File struct itself (as a reference), but it is
+	not required as a standalone object
+[ ] File structure is only required in the LookupIndex
+[ ] Rename LookupIndex to DirectoryTree
+[ ] remove File.Content, it is enough to have File.CachedContent
+[ ] make File.CachedContent a byte array, not a string
+[ ] if the data tree changes, then all dependent files need to be regenerated
+	[ ] header or footer: everything will be recreated (i.e. delete
+		CachedContent of all text/html files)
+	[ ] directory metadata: everything below that directory is recreated
+	[ ] file metadata: file is recreated
+	[ ] file: file is recreated
+	[ ] what about auto-generated blog files?
 
-[ ] migrate crupp.de to the new solution; objective is that this becomes
-    (with minor modifications) the default template for this use case!
-    [ ] add a /now page
+[ ] Create a default template for a minimalistic digital business card
+
+!!!
+!!! how would a minimalistic design look like for a digital business card with
+!!! projects (e.g. open source projects), services (e.g. mentoring engineering
+!!! managers, startup advisory), how to get in touch, an overview of the CV,
+!!! /now, ...? 
+
+(Intro text) I am [Head of Engineering/now] at EPI, where we are building a new pan-European payments scheme called Wero[link]. My background is in software engineering [CV], mostly with C/C++. I have written a variety of open source projects, most of them outdated by now[projects]. I have published research work with [Daniel Lemire] on compression algorithms in databases. If you are an engineering manager, I am available for mentoring. If you work for a startup, I am available as a startup advisor.
+
+(Then add how to get in touch - email, linkedin)
+
     [ ] update config, navigation.yaml
-    [ ] add a default favicon
-    [ ] add the pdf (for downloading the CV)
-    [ ] really use templating to add links etc
-    [ ] automate the deployment, e.g. in a docker container
+    [ ] update the main page (CV) if necessary
+    [ ] add a /now page
+    [ ] add a favicon (default symbol: • or ·)
+    [ ] display date of last update (of the current page) in the footer
+    [ ] footer: also add a "built with..." and a link to the github repository
+    [ ] add a pdf with a CV
+    [ ] use templating to add links etc, instead of hardcoding them
     [ ] cmd line args ("create --template=business-card-01") then copy this
         template to a new (clean!) subdirectory!
+    [ ] migrate crupp.de to the new solution
+    	[ ] automate the deployment, e.g. in a docker container
+    	[ ] set up monitoring
 
 [ ] use case: host technical documentation
-    [ ] self-host the documentation
+    [ ] self-host the documentation of what we have built so far
 
 [ ] use case: personal blog
     [ ] parse navigation.yaml and use it to build routes
