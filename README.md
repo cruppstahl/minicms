@@ -38,11 +38,10 @@
 	File have higher priority than those in Directory)
 [x] move custom css template (site.css) to Branding, use it in header.html
 	adjust header.html, footer.html
-[ ] remove Directory and File structure in Navigation; Directory is only
+[x] remove Directory and File structure in Navigation; Directory is only
 	required from the File struct itself (as a reference), but it is
 	not required as a standalone object
-[ ] File structure is only required in the LookupIndex
-[ ] Rename LookupIndex to DirectoryTree
+[x] File structure is only required in the LookupIndex
 [ ] remove File.Content, it is enough to have File.CachedContent
 [ ] make File.CachedContent a byte array, not a string
 [ ] if the data tree changes, then all dependent files need to be regenerated

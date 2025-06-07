@@ -60,16 +60,16 @@ func applyTemplate(body string, file *File, context *Context) (string, error) {
 		"SiteTitle":        context.Config.Server.Title,
 		"SiteDescription":  context.Config.Server.Description,
 		"Site.Author.Name": context.Users.Users[0].Name, // Assuming at least one user exists
-		"Navigation":       context.Navigation.Tree,
+		"Navigation":       context.Navigation.NavigationTree,
 		"BrandingFavicon":  context.Config.Branding.Favicon,
 		"BrandingCssFile":  context.Config.Branding.CssFile,
-		//		"Directory.Title":  directory.Title,
-		"FileTitle":     file.Title,
-		"FileAuthor":    file.Author,
-		"FileTags":      file.Tags,
-		"FileImagePath": file.ImagePath,
-		"FileCssFile":   file.CssFile,
-		"FileMimeType":  file.MimeType,
+		"Directory.Title":  file.Directory.Title,
+		"FileTitle":        file.Title,
+		"FileAuthor":       file.Author,
+		"FileTags":         file.Tags,
+		"FileImagePath":    file.ImagePath,
+		"FileCssFile":      file.CssFile,
+		"FileMimeType":     file.MimeType,
 	}
 
 	err = tmpl.Execute(&output, vars)
@@ -84,26 +84,26 @@ func applyTemplate(body string, file *File, context *Context) (string, error) {
 func getFile(path string, context *Context) (*File, error) {
 	normalizedPath := normalizePath(path)
 
-	lookup, ok := context.Navigation.LookupIndex[normalizedPath]
+	file, ok := context.Navigation.LookupIndex[normalizedPath]
 	if !ok {
 		return nil, fmt.Errorf("file not found: %s", normalizedPath)
 	}
 
 	// If the file is not cached then build it
-	if lookup.File.CachedContent == "" {
-		body, err := fetchFileBody(&lookup.File, context)
+	if file.CachedContent == "" {
+		body, err := fetchFileBody(&file, context)
 		if err != nil {
 			return nil, err
 		}
 
 		// ignore errors, just display the template as is if it cannot be applied
-		body, err = applyTemplate(body, &lookup.File, context)
+		body, err = applyTemplate(body, &file, context)
 		if err == nil {
-			lookup.File.CachedContent = body
+			file.CachedContent = body
 		}
 	}
 
-	return &lookup.File, nil
+	return &file, nil
 }
 
 func SetupRoutes(router *gin.Engine, context *Context) error {
