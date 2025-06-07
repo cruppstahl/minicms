@@ -90,7 +90,7 @@ func getFile(path string, context *Context) (*File, error) {
 	}
 
 	// If the file is not cached then build it
-	if file.CachedContent == "" {
+	if len(file.CachedContent) == 0 {
 		body, err := fetchFileBody(&file, context)
 		if err != nil {
 			return nil, err
@@ -99,7 +99,7 @@ func getFile(path string, context *Context) (*File, error) {
 		// ignore errors, just display the template as is if it cannot be applied
 		body, err = applyTemplate(body, &file, context)
 		if err == nil {
-			file.CachedContent = body
+			file.CachedContent = []byte(body)
 		}
 	}
 

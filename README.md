@@ -42,8 +42,7 @@
 	required from the File struct itself (as a reference), but it is
 	not required as a standalone object
 [x] File structure is only required in the LookupIndex
-[ ] remove File.Content, it is enough to have File.CachedContent
-[ ] make File.CachedContent a byte array, not a string
+[x] make File.CachedContent a byte array, not a string
 [ ] if the data tree changes, then all dependent files need to be regenerated
 	[ ] header or footer: everything will be recreated (i.e. delete
 		CachedContent of all text/html files)

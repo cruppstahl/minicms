@@ -30,7 +30,7 @@ type File struct {
 	ImagePath     string
 	CssFile       string
 	MimeType      string
-	CachedContent string
+	CachedContent []byte
 	Directory     *Directory // The directory this file belongs to
 }
 
