@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/goccy/go-yaml"
 )
 
@@ -45,6 +46,11 @@ type Directory struct {
 func readDirectory(localPath string, context *Context) (Directory, error) {
 	var directory Directory
 	directory.LocalPath = localPath
+
+	// Add this directory to the watcher
+	if err := context.Watcher.Add(localPath); err != nil {
+		return Directory{}, fmt.Errorf("failed to add directory to watcher: %w", err)
+	}
 
 	// Construct the path to metadata.yaml
 	metadataPath := filepath.Join(localPath, "metadata.yaml")
@@ -173,6 +179,14 @@ func populateLookupIndex(item *NavigationItem, directory *Directory, url string,
 	}
 }
 
+func isFile(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false // If we can't stat the file, assume it's not a file
+	}
+	return !info.IsDir() // Return true if it's not a directory
+}
+
 func ReadNavigationYaml(context Context, path string) (Context, error) {
 	context.Navigation.FilePath = path
 	context.Navigation.LookupIndex = make(map[string]File)
@@ -192,6 +206,81 @@ func ReadNavigationYaml(context Context, path string) (Context, error) {
 	if len(context.Navigation.NavigationTree) == 0 {
 		return Context{}, fmt.Errorf("no main navigation items found in %s", path)
 	}
+
+	// Initialize the File System watcher
+	context.Watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		return Context{}, fmt.Errorf("failed to set up fsnotify: %v", err)
+	}
+
+	go func() {
+		for {
+			select {
+			case event, ok := <-context.Watcher.Events:
+				if !ok {
+					log.Fatal("Watcher events channel closed")
+				} else {
+					log.Printf("File change detected: %s", event.Name)
+
+					changedPath := strings.TrimPrefix(event.Name, context.Config.SiteDirectory)
+					// Force recreation of all html files if the layout has changed
+					if strings.HasPrefix(changedPath, "/layout") {
+						for url, file := range context.Navigation.LookupIndex {
+							if file.MimeType == "text/html" {
+								file.CachedContent = nil
+								context.Navigation.LookupIndex[url] = file
+							}
+						}
+						break
+					}
+
+					changedPath = strings.TrimPrefix(changedPath, "/content")
+					// If a metadata.yaml file has changed then force recreation of the
+					// corresponding html file (or whole directory)
+					if strings.HasSuffix(changedPath, "metadata.yaml") {
+						changedPath = strings.TrimSuffix(changedPath, "metadata.yaml")
+						for url, file := range context.Navigation.LookupIndex {
+							if strings.HasPrefix(url, changedPath) && file.MimeType == "text/html" {
+								file.CachedContent = nil
+								context.Navigation.LookupIndex[url] = file
+							}
+						}
+						break
+					}
+
+					// If a file was changed then update the LookupIndedx
+					if isFile(event.Name) {
+						// Remove a potential .html suffix
+						changedPath = strings.TrimSuffix(changedPath, ".html")
+
+						file, exists := context.Navigation.LookupIndex[changedPath]
+						if exists {
+							if file.MimeType == "text/html" {
+								file.CachedContent = nil
+								context.Navigation.LookupIndex[changedPath] = file
+							}
+							return
+						}
+					}
+
+					// Otherwise assume that the event is a directory change, and update
+					// everything that is below this directory
+					for url, file := range context.Navigation.LookupIndex {
+						if strings.HasPrefix(url, changedPath) && file.MimeType == "text/html" {
+							file.CachedContent = nil
+							context.Navigation.LookupIndex[url] = file
+						}
+					}
+				}
+			case err, ok := <-context.Watcher.Errors:
+				if !ok {
+					log.Fatal("Watcher events channel closed")
+				} else {
+					log.Printf("Watcher error %v", err)
+				}
+			}
+		}
+	}()
 
 	// Populate the LookupIndex with NavigationItem and Directory, and while we're at it,
 	// also enforce absolute paths for LocalPath and Url
@@ -214,6 +303,11 @@ func ReadNavigationYaml(context Context, path string) (Context, error) {
 
 		// Create LookupItems for all Files in the Directory
 		populateLookupIndex(&item, &directory, item.Url, &context)
+	}
+
+	// Add the /layout to the watcher, to get informed about changes in the html header/footer
+	if err := context.Watcher.Add(filepath.Join(context.Config.SiteDirectory, "layout")); err != nil {
+		log.Printf("failed to add layout directory to watcher: %v", err)
 	}
 
 	// Return the parsed data

@@ -43,13 +43,15 @@
 	not required as a standalone object
 [x] File structure is only required in the LookupIndex
 [x] make File.CachedContent a byte array, not a string
-[ ] if the data tree changes, then all dependent files need to be regenerated
-	[ ] header or footer: everything will be recreated (i.e. delete
-		CachedContent of all text/html files)
-	[ ] directory metadata: everything below that directory is recreated
-	[ ] file metadata: file is recreated
-	[ ] file: file is recreated
-	[ ] what about auto-generated blog files?
+[x] if the data tree changes, then all dependent files need to be regenerated
+	[x] $site/layout: invalidate everything (i.e. delete CachedContent of all
+        text/html files)
+	[x] directory: everything including/below that directory is
+        invalidated
+	[x] directory metadata: everything including/below that directory is
+        invalidated
+	[x] file metadata: file is invalidated
+	[x] file: file is recreated
 
 [ ] Create a default template for a minimalistic digital business card
 
@@ -84,9 +86,8 @@
     [ ] parse navigation.yaml and use it to build routes
     [ ] default index page shows all posts (configurable!)
     [ ] site configuration specifies pagination etc
+    [ ] recreate auto-generated blog file if a post has been changed or
+        added/removed
 
-[ ] if a file was updated, i.e. has a newer timestamp (and different checksum):
-    rebuild it (but not more than once per minute)
 [ ] if a file or directory was added then support the route
 [ ] if a file or directory was removed then drop the route
-[ ] make sure to also rebuild the generated pages etc

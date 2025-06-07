@@ -19,6 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to set up routes: %v", err)
 	}
+	defer context.Watcher.Close()
 
 	// internal.PrettyPrint(context)
 

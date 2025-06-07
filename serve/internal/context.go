@@ -2,6 +2,8 @@ package internal
 
 import (
 	"fmt"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 type Context struct {
@@ -9,6 +11,7 @@ type Context struct {
 	Config     Config
 	Navigation Navigation
 	DataCache  map[string]File
+	Watcher    *fsnotify.Watcher
 }
 
 func InitializeContext() (Context, error) {
