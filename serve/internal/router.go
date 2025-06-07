@@ -1,7 +1,11 @@
 package internal
 
 import (
+	"fmt"
 	"log"
+	"os"
+	"strings"
+	"text/template"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,7 +15,7 @@ func addRoute(router *gin.Engine, url string) {
 		// Don't forget type assertion when getting the connection from context.
 		context, _ := c.MustGet("context").(*Context)
 
-		file, err := GetFile(c.Request.URL.Path, context)
+		file, err := getFile(c.Request.URL.Path, context)
 		if err != nil {
 			log.Printf("Failed to get file for path %s: %v", c.Request.URL.Path, err)
 			c.HTML(500, "error.html", gin.H{
@@ -22,6 +26,84 @@ func addRoute(router *gin.Engine, url string) {
 
 		c.Data(200, file.MimeType, []byte(file.CachedContent))
 	})
+}
+
+func normalizePath(path string) string {
+	// Convert double slashes to single slashes
+	path = strings.ReplaceAll(path, "\\", "/")
+
+	// Also convert double slashes to single slashes
+	return strings.ReplaceAll(path, "//", "/")
+}
+
+func fetchFileBody(file *File, context *Context) (string, error) {
+	header, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/header.html")
+	footer, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/footer.html")
+
+	// Read content from file.LocalPath and store it in file.Content
+	body, err := os.ReadFile(file.LocalPath)
+	if err != nil {
+		log.Printf("failed to read file content for %s: %s", file.LocalPath, err)
+		return "", err
+	}
+	return string(header) + string(body) + string(footer), nil
+}
+
+func applyTemplate(body string, file *File, context *Context) (string, error) {
+	tmpl, err := template.New(file.LocalPath).Parse(body)
+	if err != nil {
+		log.Printf("failed to parse template for %s: %s", file.LocalPath, err)
+		return "", err
+	}
+	var output strings.Builder
+	var vars = map[string]interface{}{
+		"SiteTitle":        context.Config.Server.Title,
+		"SiteDescription":  context.Config.Server.Description,
+		"Site.Author.Name": context.Users.Users[0].Name, // Assuming at least one user exists
+		"Navigation":       context.Navigation.Tree,
+		"BrandingFavicon":  context.Config.Branding.Favicon,
+		"BrandingCssFile":  context.Config.Branding.CssFile,
+		//		"Directory.Title":  directory.Title,
+		"FileTitle":     file.Title,
+		"FileAuthor":    file.Author,
+		"FileTags":      file.Tags,
+		"FileImagePath": file.ImagePath,
+		"FileCssFile":   file.CssFile,
+		"FileMimeType":  file.MimeType,
+	}
+
+	err = tmpl.Execute(&output, vars)
+	if err != nil {
+		log.Printf("failed to execute template for %s: %s", file.LocalPath, err)
+		return "", err
+	}
+
+	return output.String(), nil
+}
+
+func getFile(path string, context *Context) (*File, error) {
+	normalizedPath := normalizePath(path)
+
+	lookup, ok := context.Navigation.LookupIndex[normalizedPath]
+	if !ok {
+		return nil, fmt.Errorf("file not found: %s", normalizedPath)
+	}
+
+	// If the file is not cached then build it
+	if lookup.File.CachedContent == "" {
+		body, err := fetchFileBody(&lookup.File, context)
+		if err != nil {
+			return nil, err
+		}
+
+		// ignore errors, just display the template as is if it cannot be applied
+		body, err = applyTemplate(body, &lookup.File, context)
+		if err == nil {
+			lookup.File.CachedContent = body
+		}
+	}
+
+	return &lookup.File, nil
 }
 
 func SetupRoutes(router *gin.Engine, context *Context) error {

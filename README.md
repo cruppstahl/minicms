@@ -32,11 +32,11 @@
 
 [x] add favicon to site configuration (under "branding")
 [x] add route for static files (router.Static("/static", "./local-assets")
-[ ] review templating - do we have enough data for a header/footer?
+[x] review templating - do we have enough data for a header/footer?
 	copy Navigation, (parts of)Config, Branding, Users
 	also copy relevant stuff from Directory, File (merge them - settings in
 	File have higher priority than those in Directory)
-	move custom css template (site.css) to Branding, use it in header.html
+[x] move custom css template (site.css) to Branding, use it in header.html
 	adjust header.html, footer.html
 [ ] remove Directory and File structure in Navigation; Directory is only
 	required from the File struct itself (as a reference), but it is

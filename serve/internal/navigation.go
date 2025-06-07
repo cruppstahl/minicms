@@ -41,11 +41,11 @@ type File struct {
 }
 
 type Directory struct {
-	LocalPath   string
-	Title       string `yaml:"title"`
-	CssFile     string `yaml:"cssfile"`
-	Directories map[string]Directory
-	Files       map[string]File
+	LocalPath      string
+	Title          string `yaml:"title"`
+	CssFile        string `yaml:"cssfile"`
+	Subdirectories map[string]Directory
+	Files          map[string]File
 }
 
 func readDirectory(localPath string, context *Context) (Directory, error) {
@@ -75,7 +75,7 @@ func readDirectory(localPath string, context *Context) (Directory, error) {
 		return Directory{}, err
 	}
 
-	directory.Directories = make(map[string]Directory)
+	directory.Subdirectories = make(map[string]Directory)
 	directory.Files = make(map[string]File)
 
 	// Iterate over the directory entries
@@ -94,7 +94,7 @@ func readDirectory(localPath string, context *Context) (Directory, error) {
 				log.Printf("Failed to read subdirectory %s: %v", subDirPath, err)
 				continue
 			}
-			directory.Directories[entry.Name()] = subDir
+			directory.Subdirectories[entry.Name()] = subDir
 		} else {
 			// Ignore file unless the extension is ".md", ".txt", or ".html"
 			ext := strings.ToLower(filepath.Ext(entry.Name()))
@@ -177,7 +177,7 @@ func populateLookupIndex(item *NavigationItem, directory *Directory, url string,
 	}
 
 	// Recursively populate the lookup index for child directories
-	for _, subDir := range directory.Directories {
+	for _, subDir := range directory.Subdirectories {
 		base := filepath.Base(subDir.LocalPath)
 		populateLookupIndex(item, &subDir, filepath.Join(url, base), context)
 	}

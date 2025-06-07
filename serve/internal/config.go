@@ -19,6 +19,7 @@ type Server struct {
 
 type Branding struct {
 	Favicon string `yaml:"favicon"`
+	CssFile string `yaml:"cssfile"`
 }
 
 type Config struct {

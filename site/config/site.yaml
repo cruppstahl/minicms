@@ -6,4 +6,5 @@ server:
 
 branding:
   favicon: /assets/favicon.png
+  cssfile: /assets/site.css
 
