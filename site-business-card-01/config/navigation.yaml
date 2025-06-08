@@ -1,0 +1,10 @@
+main:
+  - local-path: "/index.html"
+    url: "/"
+    label: "Home"
+  - local-path: "/projects.html"
+    url: "/projects"
+    label: "Projects"
+  - local-path: "/cv.html"
+    url: "/cv"
+    label: "CV"

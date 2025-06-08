@@ -1,0 +1,10 @@
+server:
+  port: 8080
+  hostname: your-domain-name.com
+  title: John Doe
+  description: My personal business card
+
+branding:
+  favicon: /assets/favicon.ico
+  cssfile: /assets/site.css
+

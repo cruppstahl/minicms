@@ -66,15 +66,23 @@
     [x] use templating to add navigation links
     [ ] cmd line args ("create --template=business-card-01") then copy this
         template to a new (clean!) subdirectory!
-    [ ] migrate crupp.de to the new solution
-    	[ ] automate the deployment, e.g. in a docker container
-    	[ ] set up monitoring
+
+[ ] Build automated tests
+    [ ] Create html files for a whole site, dump it to a temporary directory
+    [ ] Also dump the whole context (including configuration, navigation etc)
+    [ ] Don't forget to dump all the routes (if possible)
+    [ ] Then compare this against .golden files
+
+[ ] Migrate crupp.de to the new solution
+	[ ] automate the deployment, e.g. in a docker container
+   	[ ] set up monitoring
 
 [ ] use case: host technical documentation
     [ ] self-host the documentation of what we have built so far
     [ ] Support markdown templating and formatting
     [ ] Source code is formatted in a different style, with syntax highlighting
     [ ] Add search functionality, with key words and full text
+    [ ] Use this to expand the test suite
 
 [ ] use case: personal blog
     [ ] parse navigation.yaml and use it to build routes

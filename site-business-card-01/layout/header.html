@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/assets/site.webmanifest" />
+
+  <link rel="shortcut icon" href="{{.BrandingFavicon}}" />
+  <title>{{.SiteTitle}}</title>
+  <meta name="description" content="{{.SiteDescription}}">
+
+  <!-- Pico.css -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+
+  <!-- Custom template-->
+  <link rel="stylesheet" href="{{.BrandingCssFile}}">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@300;400;600;700&display=swap">
+</head>
+
+<body>
+  <main class="container">
+    <div class="header">
+      <div class="header-left">
+        <h1>{{.SiteTitle}}</h1>
+      </div>
+      <nav class="navigation">
+        {{ range .Navigation }}
+        <a href="{{ .Url }}" class="nav-link {{ if .IsActive }}active{{ end }}">{{ .Label }}</a>
+        {{ end }}
+      </nav>
+    </div>
