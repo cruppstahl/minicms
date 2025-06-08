@@ -66,7 +66,7 @@ func ParseCommandLineArguments() (Config, error) {
 		},
 	}
 
-	config.SiteDirectory = "../site"
+	config.SiteDirectory = "../crupp.de"
 
 	help := false
 	run := false

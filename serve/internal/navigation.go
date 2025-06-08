@@ -20,7 +20,9 @@ type Navigation struct {
 type NavigationItem struct {
 	LocalPath string           `yaml:"local-path"`
 	Url       string           `yaml:"url"`
+	Label     string           `yaml:"label"`
 	Children  []NavigationItem `yaml:"children,omitempty"`
+	IsActive  bool             // helper field for templating
 }
 
 type File struct {
@@ -48,8 +50,10 @@ func readDirectory(localPath string, context *Context) (Directory, error) {
 	directory.LocalPath = localPath
 
 	// Add this directory to the watcher
-	if err := context.Watcher.Add(localPath); err != nil {
-		return Directory{}, fmt.Errorf("failed to add directory to watcher: %w", err)
+	if !isFile(localPath) {
+		if err := context.Watcher.Add(localPath); err != nil {
+			return Directory{}, fmt.Errorf("failed to add directory to watcher: %w", err)
+		}
 	}
 
 	// Construct the path to metadata.yaml
@@ -157,7 +161,7 @@ func addLookupIndex(context *Context, url string, file File) {
 	context.Navigation.LookupIndex[url] = file
 }
 
-func populateLookupIndex(item *NavigationItem, directory *Directory, url string, context *Context) {
+func populateLookupIndex(directory *Directory, url string, context *Context) {
 	// Create a lookup item for all files in the current directory
 	for _, file := range directory.Files {
 		// Create a LookupItem for the file
@@ -168,14 +172,14 @@ func populateLookupIndex(item *NavigationItem, directory *Directory, url string,
 
 		// If this is the index file then use it as a default route for the directory
 		if base == "index" {
-			addLookupIndex(context, url+"/", file)
+			addLookupIndex(context, url, file)
 		}
 	}
 
 	// Recursively populate the lookup index for child directories
 	for _, subDir := range directory.Subdirectories {
 		base := filepath.Base(subDir.LocalPath)
-		populateLookupIndex(item, &subDir, filepath.Join(url, base), context)
+		populateLookupIndex(&subDir, filepath.Join(url, base), context)
 	}
 }
 
@@ -282,8 +286,7 @@ func ReadNavigationYaml(context Context, path string) (Context, error) {
 		}
 	}()
 
-	// Populate the LookupIndex with NavigationItem and Directory, and while we're at it,
-	// also enforce absolute paths for LocalPath and Url
+	// Enforce absolute paths for LocalPath and Url in the NavigationTree
 	for _, item := range context.Navigation.NavigationTree {
 		if !filepath.IsAbs(item.LocalPath) {
 			return Context{}, fmt.Errorf("expected absolute path for %s", item.LocalPath)
@@ -291,19 +294,19 @@ func ReadNavigationYaml(context Context, path string) (Context, error) {
 		if !filepath.IsAbs(item.Url) {
 			return Context{}, fmt.Errorf("expected absolute url for %s", item.Url)
 		}
-
-		// Set the LocalPath for the item
-		localPath := filepath.Join(context.Config.SiteDirectory, "content", item.LocalPath)
-
-		// Read the directory for this item
-		directory, err := readDirectory(localPath, &context)
-		if err != nil {
-			return Context{}, fmt.Errorf("failed to read directory for navigation item %s: %w", item.LocalPath, err)
-		}
-
-		// Create LookupItems for all Files in the Directory
-		populateLookupIndex(&item, &directory, item.Url, &context)
 	}
+
+	// Populate the LookupIndex
+	localPath := filepath.Join(context.Config.SiteDirectory, "content")
+
+	// Read the directory for this item
+	directory, err := readDirectory(localPath, &context)
+	if err != nil {
+		return Context{}, fmt.Errorf("failed to read /content directory: %w", err)
+	}
+
+	// Create LookupItems for all Files in the Directory
+	populateLookupIndex(&directory, "/", &context)
 
 	// Add the /layout to the watcher, to get informed about changes in the html header/footer
 	if err := context.Watcher.Add(filepath.Join(context.Config.SiteDirectory, "layout")); err != nil {

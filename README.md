@@ -54,25 +54,16 @@
 	[x] file: file is recreated
 
 [ ] Create a default template for a minimalistic digital business card
-
-!!!
-!!! how would a minimalistic design look like for a digital business card with
-!!! projects (e.g. open source projects), services (e.g. mentoring engineering
-!!! managers, startup advisory), how to get in touch, an overview of the CV,
-!!! /now, ...? 
-
-(Intro text) I am [Head of Engineering/now] at EPI, where we are building a new pan-European payments scheme called Wero[link]. My background is in software engineering [CV], mostly with C/C++. I have written a variety of open source projects, most of them outdated by now[projects]. I have published research work with [Daniel Lemire] on compression algorithms in databases. If you are an engineering manager, I am available for mentoring. If you work for a startup, I am available as a startup advisor.
-
-(Then add how to get in touch - email, linkedin)
-
-    [ ] update config, navigation.yaml
-    [ ] update the main page (CV) if necessary
-    [ ] add a /now page
-    [ ] add a favicon (default symbol: • or ·)
-    [ ] display date of last update (of the current page) in the footer
-    [ ] footer: also add a "built with..." and a link to the github repository
-    [ ] add a pdf with a CV
-    [ ] use templating to add links etc, instead of hardcoding them
+    [x] Create a new layout for the new page
+    [x] break it up into multiple html files
+    [x] Move inline css to separate file
+    [x] update config, navigation.yaml
+    [x] update the main page (CV) if necessary
+    [x] display date of last update (of the current page) in the footer
+    [x] add a favicon (default symbol: • or ·)
+    [x] use templating to add title, description
+    [x] Check css and html with a linter, and format them properly
+    [x] use templating to add navigation links
     [ ] cmd line args ("create --template=business-card-01") then copy this
         template to a new (clean!) subdirectory!
     [ ] migrate crupp.de to the new solution
@@ -81,6 +72,9 @@
 
 [ ] use case: host technical documentation
     [ ] self-host the documentation of what we have built so far
+    [ ] Support markdown templating and formatting
+    [ ] Source code is formatted in a different style, with syntax highlighting
+    [ ] Add search functionality, with key words and full text
 
 [ ] use case: personal blog
     [ ] parse navigation.yaml and use it to build routes

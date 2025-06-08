@@ -60,7 +60,6 @@ func applyTemplate(body string, file *File, context *Context) (string, error) {
 		"SiteTitle":        context.Config.Server.Title,
 		"SiteDescription":  context.Config.Server.Description,
 		"Site.Author.Name": context.Users.Users[0].Name, // Assuming at least one user exists
-		"Navigation":       context.Navigation.NavigationTree,
 		"BrandingFavicon":  context.Config.Branding.Favicon,
 		"BrandingCssFile":  context.Config.Branding.CssFile,
 		"Directory.Title":  file.Directory.Title,
@@ -70,7 +69,18 @@ func applyTemplate(body string, file *File, context *Context) (string, error) {
 		"FileImagePath":    file.ImagePath,
 		"FileCssFile":      file.CssFile,
 		"FileMimeType":     file.MimeType,
+		"FileLocalPath":    file.LocalPath,
+		"ActiveUrl":        "", // This will be set below
 	}
+
+	// Go through all NavigationItems. If their URL matches the current file's URL,
+	// then set the "active" variable to true.
+	navTree := context.Navigation.NavigationTree
+	for i, item := range navTree {
+		item.IsActive = strings.HasSuffix(file.LocalPath, item.LocalPath)
+		navTree[i] = item
+	}
+	vars["Navigation"] = navTree
 
 	err = tmpl.Execute(&output, vars)
 	if err != nil {
@@ -100,6 +110,7 @@ func getFile(path string, context *Context) (*File, error) {
 		body, err = applyTemplate(body, &file, context)
 		if err == nil {
 			file.CachedContent = []byte(body)
+			context.Navigation.LookupIndex[normalizedPath] = file
 		}
 	}
 
