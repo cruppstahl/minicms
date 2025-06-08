@@ -53,7 +53,7 @@
 	[x] file metadata: file is invalidated
 	[x] file: file is recreated
 
-[ ] Create a default template for a minimalistic digital business card
+[x] Create a default template for a minimalistic digital business card
     [x] Create a new layout for the new page
     [x] break it up into multiple html files
     [x] Move inline css to separate file
@@ -64,7 +64,7 @@
     [x] use templating to add title, description
     [x] Check css and html with a linter, and format them properly
     [x] use templating to add navigation links
-    [ ] cmd line args ("create --template=business-card-01") then copy this
+    [x] cmd line args ("create --template=business-card-01") then copy this
         template to a new (clean!) subdirectory!
 
 [ ] Build automated tests

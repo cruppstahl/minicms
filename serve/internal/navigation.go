@@ -191,30 +191,47 @@ func isFile(path string) bool {
 	return !info.IsDir() // Return true if it's not a directory
 }
 
-func ReadNavigationYaml(context Context, path string) (Context, error) {
-	context.Navigation.FilePath = path
-	context.Navigation.LookupIndex = make(map[string]File)
+func ReadNavigationYaml(path string) (Navigation, error) {
+	var navigation Navigation
+	navigation.FilePath = path
+	navigation.LookupIndex = make(map[string]File)
 
 	// Read the file
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return Context{}, fmt.Errorf("failed to read %s: %w", path, err)
+		return Navigation{}, fmt.Errorf("failed to read %s: %w", path, err)
 	}
 
 	// Parse the YAML file
-	if err := yaml.Unmarshal(data, &context.Navigation); err != nil {
-		return Context{}, fmt.Errorf("failed to parse %s: %w", path, err)
+	if err := yaml.Unmarshal(data, &navigation); err != nil {
+		return Navigation{}, fmt.Errorf("failed to parse %s: %w", path, err)
 	}
 
 	// We need at least one main navigation item
-	if len(context.Navigation.NavigationTree) == 0 {
-		return Context{}, fmt.Errorf("no main navigation items found in %s", path)
+	if len(navigation.NavigationTree) == 0 {
+		return Navigation{}, fmt.Errorf("no main navigation items found in %s", path)
 	}
+
+	// Enforce absolute paths for LocalPath and Url in the NavigationTree
+	for _, item := range navigation.NavigationTree {
+		if !filepath.IsAbs(item.LocalPath) {
+			return Navigation{}, fmt.Errorf("expected absolute path for %s", item.LocalPath)
+		}
+		if !filepath.IsAbs(item.Url) {
+			return Navigation{}, fmt.Errorf("expected absolute url for %s", item.Url)
+		}
+	}
+
+	return navigation, nil
+}
+
+func InitializeFsWatcher(context *Context) error {
+	var err error
 
 	// Initialize the File System watcher
 	context.Watcher, err = fsnotify.NewWatcher()
 	if err != nil {
-		return Context{}, fmt.Errorf("failed to set up fsnotify: %v", err)
+		return fmt.Errorf("failed to set up fsnotify: %v", err)
 	}
 
 	go func() {
@@ -286,33 +303,27 @@ func ReadNavigationYaml(context Context, path string) (Context, error) {
 		}
 	}()
 
-	// Enforce absolute paths for LocalPath and Url in the NavigationTree
-	for _, item := range context.Navigation.NavigationTree {
-		if !filepath.IsAbs(item.LocalPath) {
-			return Context{}, fmt.Errorf("expected absolute path for %s", item.LocalPath)
-		}
-		if !filepath.IsAbs(item.Url) {
-			return Context{}, fmt.Errorf("expected absolute url for %s", item.Url)
-		}
-	}
+	return nil
+}
 
+func InitializeFsLookup(context *Context) error {
+	var err error
 	// Populate the LookupIndex
 	localPath := filepath.Join(context.Config.SiteDirectory, "content")
 
 	// Read the directory for this item
-	directory, err := readDirectory(localPath, &context)
+	directory, err := readDirectory(localPath, context)
 	if err != nil {
-		return Context{}, fmt.Errorf("failed to read /content directory: %w", err)
+		return fmt.Errorf("failed to read /content directory: %w", err)
 	}
 
 	// Create LookupItems for all Files in the Directory
-	populateLookupIndex(&directory, "/", &context)
+	populateLookupIndex(&directory, "/", context)
 
 	// Add the /layout to the watcher, to get informed about changes in the html header/footer
 	if err := context.Watcher.Add(filepath.Join(context.Config.SiteDirectory, "layout")); err != nil {
 		log.Printf("failed to add layout directory to watcher: %v", err)
 	}
 
-	// Return the parsed data
-	return context, nil
+	return nil
 }

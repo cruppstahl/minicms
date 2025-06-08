@@ -17,25 +17,26 @@ type User struct {
 	FullName string `yaml:"fullname"`
 }
 
-func ReadUsersYaml(context Context, path string) (Context, error) {
-	context.Users.FilePath = path
+func ReadUsersYaml(path string) (Users, error) {
+	var users Users
+	users.FilePath = path
 
 	// Read the file
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return Context{}, fmt.Errorf("failed to read %s: %w", path, err)
+		return Users{}, fmt.Errorf("failed to read %s: %w", path, err)
 	}
 
 	// Parse the YAML file
-	if err := yaml.Unmarshal(data, &context.Users); err != nil {
-		return Context{}, fmt.Errorf("failed to parse %s: %w", path, err)
+	if err := yaml.Unmarshal(data, &users); err != nil {
+		return Users{}, fmt.Errorf("failed to parse %s: %w", path, err)
 	}
 
 	// Check if the authors list is empty
-	if len(context.Users.Users) == 0 {
-		return Context{}, fmt.Errorf("no users found in %s", path)
+	if len(users.Users) == 0 {
+		return Users{}, fmt.Errorf("no users found in %s", path)
 	}
 
 	// Return the parsed data
-	return context, nil
+	return users, nil
 }

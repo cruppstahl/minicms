@@ -25,6 +25,8 @@ type Branding struct {
 type Config struct {
 	FilePath      string
 	SiteDirectory string
+	Mode          string
+	OutDirectory  string
 	Server        Server   `yaml:"server"`
 	Branding      Branding `yaml:"branding"`
 }
@@ -36,21 +38,25 @@ func printHelp() {
 	println("  --hostname=localhost Hostname of the HTTP server on")
 	println("  help               	Display help information")
 	println("  run <directory>    	Directory to run the server from")
+	println("  create <template> --out=<directory>")
+	println("					    Create a new project from a template")
+	println("  dump			  	    Dump the current configuration and exit")
 }
 
-func ReadConfigYaml(context Context, filePath string) (Context, error) {
-	context.Config.FilePath = filePath
+func ReadConfigYaml(filePath string) (Config, error) {
+	var config Config
+	config.FilePath = filePath
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return Context{}, err
+		return Config{}, err
 	}
 
-	err = yaml.Unmarshal(data, &context.Config)
+	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		return Context{}, err
+		return Config{}, err
 	}
 
-	return context, nil
+	return config, nil
 }
 
 func ParseCommandLineArguments() (Config, error) {
@@ -66,10 +72,7 @@ func ParseCommandLineArguments() (Config, error) {
 		},
 	}
 
-	config.SiteDirectory = "../crupp.de"
-
 	help := false
-	run := false
 
 	flag.Parse()
 
@@ -91,6 +94,8 @@ func ParseCommandLineArguments() (Config, error) {
 					config.Server.Port = port
 				case "hostname":
 					config.Server.Hostname = value
+				case "out":
+					config.OutDirectory = value
 				default:
 					log.Fatalf("Invalid argument: %s. Use `help` for usage information.", arg)
 				}
@@ -100,7 +105,11 @@ func ParseCommandLineArguments() (Config, error) {
 		} else if arg == "help" {
 			help = true
 		} else if arg == "run" {
-			run = true
+			config.Mode = "run"
+		} else if arg == "create" {
+			config.Mode = "create"
+		} else if arg == "dump" {
+			config.Mode = "dump"
 		} else {
 			config.SiteDirectory = arg
 		}
@@ -111,12 +120,19 @@ func ParseCommandLineArguments() (Config, error) {
 		os.Exit(0)
 	}
 
+	config.SiteDirectory = "business-card-01"
+	config.OutDirectory = "../site-out"
+	config.Mode = "create"
+
 	/*
 		if !run {
 			log.Fatalf("Invalid command. Use `help` for usage information.")
 		}*/
 
-	if run && config.SiteDirectory == "" {
+	if config.Mode == "run" && config.SiteDirectory == "" {
+		log.Fatalf("Missing parameter <directory>")
+	}
+	if config.Mode == "create" && config.OutDirectory == "" {
 		log.Fatalf("Missing parameter <directory>")
 	}
 

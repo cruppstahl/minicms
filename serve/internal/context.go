@@ -14,38 +14,30 @@ type Context struct {
 	Watcher    *fsnotify.Watcher
 }
 
-func InitializeContext() (Context, error) {
-	var err error
-	var context Context
+func InitializeContext(context *Context) error {
 	context.DataCache = make(map[string]File)
-
-	// parse command line arguments
-	context.Config, err = ParseCommandLineArguments()
-	if err != nil {
-		return context, err
-	}
+	var err error
 
 	// read config.yaml
 	configFilePath := fmt.Sprintf("%s/config/site.yaml", context.Config.SiteDirectory)
-	context, err = ReadConfigYaml(context, configFilePath)
+	context.Config, err = ReadConfigYaml(configFilePath)
 	if err != nil {
-		return context, err
+		return err
 	}
 
 	// read users.yaml
 	authorsFilePath := fmt.Sprintf("%s/config/users.yaml", context.Config.SiteDirectory)
-	context, err = ReadUsersYaml(context, authorsFilePath)
+	context.Users, err = ReadUsersYaml(authorsFilePath)
 	if err != nil {
-		return context, err
+		return err
 	}
 
 	// read navigation.yaml
 	navigationFilePath := fmt.Sprintf("%s/config/navigation.yaml", context.Config.SiteDirectory)
-	context, err = ReadNavigationYaml(context, navigationFilePath)
+	context.Navigation, err = ReadNavigationYaml(navigationFilePath)
 	if err != nil {
-		return context, err
+		return err
 	}
 
-	// Return the parsed data
-	return context, err
+	return nil
 }
