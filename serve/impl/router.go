@@ -1,4 +1,4 @@
-package internal
+package impl
 
 import (
 	"fmt"
@@ -9,24 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
-func addRoute(router *gin.Engine, url string) {
-	router.GET(url, func(c *gin.Context) {
-		// Don't forget type assertion when getting the connection from context.
-		context, _ := c.MustGet("context").(*Context)
-
-		file, err := getFile(c.Request.URL.Path, context)
-		if err != nil {
-			log.Printf("Failed to get file for path %s: %v", c.Request.URL.Path, err)
-			c.HTML(500, "error.html", gin.H{
-				"message": "Internal Server Error",
-			})
-			return
-		}
-
-		c.Data(200, file.MimeType, []byte(file.CachedContent))
-	})
-}
 
 func normalizePath(path string) string {
 	// Convert double slashes to single slashes
@@ -62,7 +44,6 @@ func applyTemplate(body string, file *File, context *Context) (string, error) {
 		"Site.Author.Name": context.Users.Users[0].Name, // Assuming at least one user exists
 		"BrandingFavicon":  context.Config.Branding.Favicon,
 		"BrandingCssFile":  context.Config.Branding.CssFile,
-		"Directory.Title":  file.Directory.Title,
 		"FileTitle":        file.Title,
 		"FileAuthor":       file.Author,
 		"FileTags":         file.Tags,
@@ -71,6 +52,10 @@ func applyTemplate(body string, file *File, context *Context) (string, error) {
 		"FileMimeType":     file.MimeType,
 		"FileLocalPath":    file.LocalPath,
 		"ActiveUrl":        "", // This will be set below
+	}
+
+	if file.Directory != nil { // Can be nil when "dump"ing everything to disk
+		vars["Directory.Title"] = file.Directory.Title
 	}
 
 	// Go through all NavigationItems. If their URL matches the current file's URL,
@@ -91,10 +76,10 @@ func applyTemplate(body string, file *File, context *Context) (string, error) {
 	return output.String(), nil
 }
 
-func getFile(path string, context *Context) (*File, error) {
+func GetFileWithContent(path string, context *Context) (*File, error) {
 	normalizedPath := normalizePath(path)
 
-	file, ok := context.Navigation.LookupIndex[normalizedPath]
+	file, ok := context.Navigation.Filesystem[normalizedPath]
 	if !ok {
 		return nil, fmt.Errorf("file not found: %s", normalizedPath)
 	}
@@ -110,7 +95,7 @@ func getFile(path string, context *Context) (*File, error) {
 		body, err = applyTemplate(body, &file, context)
 		if err == nil {
 			file.CachedContent = []byte(body)
-			context.Navigation.LookupIndex[normalizedPath] = file
+			context.Navigation.Filesystem[normalizedPath] = file
 		}
 	}
 
@@ -125,8 +110,22 @@ func SetupRoutes(router *gin.Engine, context *Context) error {
 	})
 
 	// Go through the LookupIndex structure and set up the routes
-	for url, _ := range context.Navigation.LookupIndex {
-		addRoute(router, url)
+	for url := range context.Navigation.Filesystem {
+		router.GET(url, func(c *gin.Context) {
+			// Don't forget type assertion when getting the connection from context.
+			context, _ := c.MustGet("context").(*Context)
+
+			file, err := GetFileWithContent(c.Request.URL.Path, context)
+			if err != nil {
+				log.Printf("Failed to get file for path %s: %v", c.Request.URL.Path, err)
+				c.HTML(500, "error.html", gin.H{
+					"message": "Internal Server Error",
+				})
+				return
+			}
+
+			c.Data(200, file.MimeType, []byte(file.CachedContent))
+		})
 	}
 
 	// Add a static route

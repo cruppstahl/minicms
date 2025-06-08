@@ -1,4 +1,4 @@
-package internal
+package impl
 
 import (
 	"fmt"
@@ -10,17 +10,15 @@ type Context struct {
 	Users      Users
 	Config     Config
 	Navigation Navigation
-	DataCache  map[string]File
 	Watcher    *fsnotify.Watcher
 }
 
 func InitializeContext(context *Context) error {
-	context.DataCache = make(map[string]File)
 	var err error
 
 	// read config.yaml
 	configFilePath := fmt.Sprintf("%s/config/site.yaml", context.Config.SiteDirectory)
-	context.Config, err = ReadConfigYaml(configFilePath)
+	err = ReadConfigYaml(&context.Config, configFilePath)
 	if err != nil {
 		return err
 	}

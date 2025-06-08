@@ -64,14 +64,17 @@
     [x] use templating to add title, description
     [x] Check css and html with a linter, and format them properly
     [x] use templating to add navigation links
-    [x] cmd line args ("create --template=business-card-01") then copy this
+    [x] cmd line args ("create business-card-01 --out=directory") then copy this
         template to a new (clean!) subdirectory!
 
 [ ] Build automated tests
-    [ ] Create html files for a whole site, dump it to a temporary directory
-    [ ] Also dump the whole context (including configuration, navigation etc)
-    [ ] Don't forget to dump all the routes (if possible)
-    [ ] Then compare this against .golden files
+    [x] Support config option "dump template --out=directory"
+    [x] Dump the whole context (including configuration, navigation etc)
+        to a file ($out/context.json)
+    [x] Also include the LookupIndex in the dump
+    [x] Create html files for a whole site, dump them to a temporary directory
+    [ ] Then compare the output against .golden files
+    [ ] Use fs.Walk in filesystem.go instead of storing Directory/Subdirectories
 
 [ ] Migrate crupp.de to the new solution
 	[ ] automate the deployment, e.g. in a docker container

@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"os/exec"
-	"serve/internal"
+	"serve/impl"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -11,15 +11,16 @@ import (
 
 func main() {
 	var err error
-	var context internal.Context
+	var context impl.Context
 
 	// parse command line arguments
-	context.Config, err = internal.ParseCommandLineArguments()
+	context.Config, err = impl.ParseCommandLineArguments()
 	if err != nil {
 		return
 	}
 
-	log.Printf("Running in mode: %s", context.Config.Mode)
+	// Command line mode "create" copies one of the templates to a new directory
+	// as a simple way to start a new project.
 	if context.Config.Mode == "create" {
 		log.Printf("cp -r ../site-" + context.Config.SiteDirectory + " " + context.Config.OutDirectory)
 		cmd := exec.Command("cp", "-r", "../site-"+context.Config.SiteDirectory, context.Config.OutDirectory)
@@ -30,35 +31,44 @@ func main() {
 		return
 	}
 
-	err = internal.InitializeContext(&context)
+	// Now read all yaml files and the file tree
+	err = impl.InitializeContext(&context)
 	if err != nil {
 		log.Fatalf("Failed to initialize context: %v", err)
 	}
 
+	// Initialize the cached file system
+	err = impl.InitializeFilesystem(&context)
+	if err != nil {
+		log.Fatalf("Failed to initialize lookup index: %v", err)
+	}
+
+	// If requested, dump the whole context and the file tree to a directory
+	// This is used for testing (the directory can then be compared to
+	// a "golden" set of files, and any deviation is a bug)
 	if context.Config.Mode == "dump" {
-		internal.PrettyPrint(context)
+		impl.Dump(&context)
 		return
 	}
 
-	// Assume that context.Config.Mode == "run"
-	router := gin.Default()
+	// From here on we assume that we run the server
 
-	err = internal.InitializeFsWatcher(&context)
+	// The FsWatcher will invalidate cached file contents if the underlying file
+	// is changed
+	err = impl.InitializeFsWatcher(&context)
 	if err != nil {
 		log.Fatalf("failed to initialize file watcher: %v", err)
 	}
+	defer context.Watcher.Close()
 
-	err = internal.InitializeFsLookup(&context)
-	if err != nil {
-		log.Fatalf("failed to initialize file system lookup: %v", err)
-	}
-
-	err = internal.SetupRoutes(router, &context)
+	// Set up the routes
+	router := gin.Default()
+	err = impl.SetupRoutes(router, &context)
 	if err != nil {
 		log.Fatalf("Failed to set up routes: %v", err)
 	}
-	defer context.Watcher.Close()
 
+	// Then run the server
 	err = router.Run(":" + strconv.Itoa(context.Config.Server.Port))
 	if err != nil {
 		log.Fatalf("Failed to run server: %v", err)

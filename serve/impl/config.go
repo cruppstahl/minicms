@@ -1,4 +1,4 @@
-package internal
+package impl
 
 import (
 	"flag"
@@ -40,23 +40,18 @@ func printHelp() {
 	println("  run <directory>    	Directory to run the server from")
 	println("  create <template> --out=<directory>")
 	println("					    Create a new project from a template")
-	println("  dump			  	    Dump the current configuration and exit")
+	println("  dump	<template> --out=<directory>")
+	println("		  	            Generate and dump the full state of the template (for testing)")
 }
 
-func ReadConfigYaml(filePath string) (Config, error) {
-	var config Config
+func ReadConfigYaml(config *Config, filePath string) error {
 	config.FilePath = filePath
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return Config{}, err
+		return err
 	}
 
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		return Config{}, err
-	}
-
-	return config, nil
+	return yaml.Unmarshal(data, &config)
 }
 
 func ParseCommandLineArguments() (Config, error) {
@@ -71,6 +66,10 @@ func ParseCommandLineArguments() (Config, error) {
 			Favicon: "/assets/favicon.png",
 		},
 	}
+
+	config.SiteDirectory = "../site-business-card-01"
+	config.OutDirectory = "../site-out"
+	config.Mode = "dump"
 
 	help := false
 
@@ -120,20 +119,24 @@ func ParseCommandLineArguments() (Config, error) {
 		os.Exit(0)
 	}
 
-	config.SiteDirectory = "business-card-01"
-	config.OutDirectory = "../site-out"
-	config.Mode = "create"
-
-	/*
-		if !run {
-			log.Fatalf("Invalid command. Use `help` for usage information.")
-		}*/
-
 	if config.Mode == "run" && config.SiteDirectory == "" {
 		log.Fatalf("Missing parameter <directory>")
 	}
-	if config.Mode == "create" && config.OutDirectory == "" {
-		log.Fatalf("Missing parameter <directory>")
+	if config.Mode == "create" {
+		if config.SiteDirectory == "" {
+			log.Fatalf("Missing parameter <directory>")
+		}
+		if config.OutDirectory == "" {
+			log.Fatalf("Missing parameter --out")
+		}
+	}
+	if config.Mode == "dump" {
+		if config.SiteDirectory == "" {
+			log.Fatalf("Missing parameter <directory>")
+		}
+		if config.OutDirectory == "" {
+			log.Fatalf("Missing parameter --out")
+		}
 	}
 
 	return config, nil
