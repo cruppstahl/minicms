@@ -1,12 +1,9 @@
 package impl
 
 import (
-	"flag"
-	"log"
 	"os"
-	"strconv"
-	"strings"
 
+	"github.com/jessevdk/go-flags"
 	"gopkg.in/yaml.v2"
 )
 
@@ -31,15 +28,30 @@ type Config struct {
 	Branding      Branding `yaml:"branding"`
 }
 
-func printHelp() {
-	println("Usage: serve [options]")
-	println("Options:")
-	println("  --port=8080        	Port to run the HTTP server on")
-	println("  --hostname=localhost Hostname of the HTTP server on")
-	println("  help               	Display help information")
-	println("  run <directory>    	Directory to run the server from")
-	println("  dump	<template> --out=<directory>")
-	println("		  	            Generate and dump the full state of the template (for testing)")
+// Options defines the command-line options structure
+type Options struct {
+	Port     int    `short:"p" long:"port" description:"Port to run the HTTP server on" default:"8080"`
+	Hostname string `short:"h" long:"hostname" description:"Hostname of the HTTP server" default:"localhost"`
+	Out      string `short:"o" long:"out" description:"Output directory"`
+	Help     bool   `long:"help" description:"Display help information"`
+}
+
+// Commands defines the available subcommands
+type Commands struct {
+	Run  RunCommand  `command:"run" description:"Run the server from a directory"`
+	Dump DumpCommand `command:"dump" description:"Generate and dump the full state of the template (for testing)"`
+}
+
+type RunCommand struct {
+	Args struct {
+		Directory string `positional-arg-name:"directory" description:"Directory to run the server from"`
+	} `positional-args:"yes" required:"yes"`
+}
+
+type DumpCommand struct {
+	Args struct {
+		Template string `positional-arg-name:"template" description:"Template to dump"`
+	} `positional-args:"yes" required:"yes"`
 }
 
 func ReadConfigYaml(config *Config, filePath string) error {
@@ -48,11 +60,11 @@ func ReadConfigYaml(config *Config, filePath string) error {
 	if err != nil {
 		return err
 	}
-
 	return yaml.Unmarshal(data, &config)
 }
 
 func ParseCommandLineArguments() (Config, error) {
+	// Initialize config with defaults
 	var config = Config{
 		Server: Server{
 			Port:        8080,
@@ -65,73 +77,65 @@ func ParseCommandLineArguments() (Config, error) {
 		},
 	}
 
-	config.SiteDirectory = "../site-business-card-01"
-	config.OutDirectory = "../site-out"
-	config.Mode = "dump"
+	var opts Options
+	var commands Commands
 
-	help := false
+	parser := flags.NewParser(&opts, flags.Default)
+	parser.AddCommand("run", "Run the server from a directory",
+		"Run the server from the specified directory", &commands.Run)
+	parser.AddCommand("dump", "Generate and dump template state",
+		"Generate and dump the full state of the template (for testing)", &commands.Dump)
 
-	flag.Parse()
-
-	// iterate over all command line arguments. If they start with "--", treat them as flags
-	// otherwise treat them as command line commands
-	for _, arg := range flag.Args() {
-		if strings.HasPrefix(arg, "--") {
-			// split arg into key and value
-			parts := strings.SplitN(arg, "=", 2)
-			if len(parts) == 2 {
-				key := strings.TrimPrefix(parts[0], "--")
-				value := parts[1]
-				switch key {
-				case "port":
-					port, err := strconv.Atoi(value)
-					if err != nil {
-						log.Fatalf("Invalid port value: %s, expected integer.", value)
-					}
-					config.Server.Port = port
-				case "hostname":
-					config.Server.Hostname = value
-				case "out":
-					config.OutDirectory = value
-				default:
-					log.Fatalf("Invalid argument: %s. Use `help` for usage information.", arg)
-				}
-			} else {
-				log.Fatalf("Invalid argument: %s. Use `help` for usage information.", arg)
+	_, err := parser.Parse()
+	if err != nil {
+		// Check if it's a help request
+		if flagsErr, ok := err.(*flags.Error); ok {
+			if flagsErr.Type == flags.ErrHelp {
+				os.Exit(0)
 			}
-		} else if arg == "help" {
-			help = true
-		} else if arg == "run" {
+		}
+		return config, err
+	}
+
+	// Apply global options to config
+	config.Server.Port = opts.Port
+	config.Server.Hostname = opts.Hostname
+	if opts.Out != "" {
+		config.OutDirectory = opts.Out
+	}
+
+	// Handle commands
+	if parser.Active != nil {
+		switch parser.Active.Name {
+		case "run":
 			config.Mode = "run"
-		} else if arg == "dump" {
+			config.SiteDirectory = commands.Run.Args.Directory
+		case "dump":
 			config.Mode = "dump"
-		} else {
-			config.SiteDirectory = arg
+			config.SiteDirectory = commands.Dump.Args.Template
 		}
 	}
 
-	if help {
-		printHelp()
-		os.Exit(0)
-	}
-
+	// Validation
 	if config.Mode == "run" && config.SiteDirectory == "" {
-		log.Fatalf("Missing parameter <directory>")
-	}
-	if config.Mode == "create" {
-		if config.SiteDirectory == "" {
-			log.Fatalf("Missing parameter <directory>")
-		}
-		if config.OutDirectory == "" {
-			log.Fatalf("Missing parameter --out")
+		return config, &flags.Error{
+			Type:    flags.ErrRequired,
+			Message: "Missing parameter <directory>",
 		}
 	}
+
 	if config.Mode == "dump" {
 		if config.SiteDirectory == "" {
-			log.Fatalf("Missing parameter <directory>")
+			return config, &flags.Error{
+				Type:    flags.ErrRequired,
+				Message: "Missing parameter <directory>",
+			}
 		}
 		if config.OutDirectory == "" {
-			log.Fatalf("Missing parameter --out")
+			return config, &flags.Error{
+				Type:    flags.ErrRequired,
+				Message: "Missing parameter --out",
+			}
 		}
 	}
 

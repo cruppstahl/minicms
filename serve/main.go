@@ -4,8 +4,6 @@ import (
 	"log"
 	"serve/impl"
 	"strconv"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -49,8 +47,7 @@ func main() {
 	defer context.Watcher.Close()
 
 	// Set up the routes
-	router := gin.Default()
-	err = impl.SetupRoutes(router, &context)
+	router, err := impl.InitializeRouter(&context)
 	if err != nil {
 		log.Fatalf("Failed to set up routes: %v", err)
 	}

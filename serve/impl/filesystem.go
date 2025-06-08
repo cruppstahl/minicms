@@ -161,14 +161,6 @@ func populateFilesystem(directory *Directory, url string, context *Context) {
 	}
 }
 
-func isFile(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false // If we can't stat the file, assume it's not a file
-	}
-	return !info.IsDir() // Return true if it's not a directory
-}
-
 func InitializeFilesystem(context *Context) error {
 	var err error
 	contentRoot := filepath.Join(context.Config.SiteDirectory, "content")

@@ -11,6 +11,14 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+func isFile(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false // If we can't stat the file, assume it's not a file
+	}
+	return !info.IsDir() // Return true if it's not a directory
+}
+
 func InitializeFsWatcher(context *Context) error {
 	var err error
 

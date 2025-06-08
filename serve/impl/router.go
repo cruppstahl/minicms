@@ -102,7 +102,9 @@ func GetFileWithContent(path string, context *Context) (*File, error) {
 	return &file, nil
 }
 
-func SetupRoutes(router *gin.Engine, context *Context) error {
+func InitializeRouter(context *Context) (*gin.Engine, error) {
+	router := gin.Default()
+
 	// Store context in the router's gin context
 	router.Use(func(c *gin.Context) {
 		c.Set("context", context)
@@ -132,5 +134,5 @@ func SetupRoutes(router *gin.Engine, context *Context) error {
 	staticDir := context.Config.SiteDirectory + "/assets"
 	router.Static("/assets", staticDir)
 
-	return nil
+	return router, nil
 }

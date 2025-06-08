@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/main.go",
-            "args": ["build", "../sites/business-card-01", "--out=/tmp/outdir"]
+            "args": ["dump", "../sites/business-card-01", "--out=/tmp/outdir"]
         },
        
     ]

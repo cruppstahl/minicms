@@ -74,6 +74,8 @@
     [x] Also include the LookupIndex in the dump
     [x] Create html files for a whole site, dump them to a temporary directory
     [x] Then compare the output against .golden files
+    [x] Look for a better library to parse command line args
+        https://github.com/jessevdk/go-flags
     [ ] Use fs.Walk in filesystem.go instead of storing Directory/Subdirectories
 
 [ ] Migrate crupp.de to the new solution
