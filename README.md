@@ -73,7 +73,7 @@
         to a file ($out/context.json)
     [x] Also include the LookupIndex in the dump
     [x] Create html files for a whole site, dump them to a temporary directory
-    [ ] Then compare the output against .golden files
+    [x] Then compare the output against .golden files
     [ ] Use fs.Walk in filesystem.go instead of storing Directory/Subdirectories
 
 [ ] Migrate crupp.de to the new solution

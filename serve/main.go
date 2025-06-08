@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os/exec"
 	"serve/impl"
 	"strconv"
 
@@ -16,18 +15,6 @@ func main() {
 	// parse command line arguments
 	context.Config, err = impl.ParseCommandLineArguments()
 	if err != nil {
-		return
-	}
-
-	// Command line mode "create" copies one of the templates to a new directory
-	// as a simple way to start a new project.
-	if context.Config.Mode == "create" {
-		log.Printf("cp -r ../site-" + context.Config.SiteDirectory + " " + context.Config.OutDirectory)
-		cmd := exec.Command("cp", "-r", "../site-"+context.Config.SiteDirectory, context.Config.OutDirectory)
-		err := cmd.Run()
-		if err != nil {
-			log.Fatalf("Failed to execute command: %v", err)
-		}
 		return
 	}
 

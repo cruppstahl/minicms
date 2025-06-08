@@ -1,0 +1,100 @@
+{
+  "Users": {
+    "FilePath": "templates/business-card-01/config/users.yaml",
+    "Users": [
+      {
+        "Name": "john",
+        "FullName": "John Doe"
+      }
+    ]
+  },
+  "Config": {
+    "FilePath": "templates/business-card-01/config/site.yaml",
+    "SiteDirectory": "templates/business-card-01",
+    "Mode": "dump",
+    "OutDirectory": "/tmp/test-out/business-card-01",
+    "Server": {
+      "Port": 8080,
+      "Hostname": "your-domain-name.com",
+      "Title": "John Doe",
+      "Description": "My personal business card"
+    },
+    "Branding": {
+      "Favicon": "/assets/favicon.ico",
+      "CssFile": "/assets/site.css"
+    }
+  },
+  "Navigation": {
+    "FilePath": "templates/business-card-01/config/navigation.yaml",
+    "NavigationTree": [
+      {
+        "LocalPath": "/index.html",
+        "Url": "/",
+        "Label": "Home",
+        "Children": null,
+        "IsActive": false
+      },
+      {
+        "LocalPath": "/projects.html",
+        "Url": "/projects",
+        "Label": "Projects",
+        "Children": null,
+        "IsActive": false
+      },
+      {
+        "LocalPath": "/cv.html",
+        "Url": "/cv",
+        "Label": "CV",
+        "Children": null,
+        "IsActive": false
+      }
+    ],
+    "Filesystem": {
+      "/": {
+        "LocalPath": "templates/business-card-01/content/index.html",
+        "Title": "index",
+        "Author": "",
+        "Tags": null,
+        "ImagePath": "",
+        "CssFile": "",
+        "MimeType": "text/html",
+        "CachedContent": null,
+        "Directory": null
+      },
+      "/cv": {
+        "LocalPath": "templates/business-card-01/content/cv.html",
+        "Title": "cv",
+        "Author": "",
+        "Tags": null,
+        "ImagePath": "",
+        "CssFile": "",
+        "MimeType": "text/html",
+        "CachedContent": null,
+        "Directory": null
+      },
+      "/index": {
+        "LocalPath": "templates/business-card-01/content/index.html",
+        "Title": "index",
+        "Author": "",
+        "Tags": null,
+        "ImagePath": "",
+        "CssFile": "",
+        "MimeType": "text/html",
+        "CachedContent": null,
+        "Directory": null
+      },
+      "/projects": {
+        "LocalPath": "templates/business-card-01/content/projects.html",
+        "Title": "projects",
+        "Author": "",
+        "Tags": null,
+        "ImagePath": "",
+        "CssFile": "",
+        "MimeType": "text/html",
+        "CachedContent": null,
+        "Directory": null
+      }
+    }
+  },
+  "Watcher": null
+}

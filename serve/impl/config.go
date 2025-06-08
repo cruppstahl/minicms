@@ -38,8 +38,6 @@ func printHelp() {
 	println("  --hostname=localhost Hostname of the HTTP server on")
 	println("  help               	Display help information")
 	println("  run <directory>    	Directory to run the server from")
-	println("  create <template> --out=<directory>")
-	println("					    Create a new project from a template")
 	println("  dump	<template> --out=<directory>")
 	println("		  	            Generate and dump the full state of the template (for testing)")
 }
@@ -105,8 +103,6 @@ func ParseCommandLineArguments() (Config, error) {
 			help = true
 		} else if arg == "run" {
 			config.Mode = "run"
-		} else if arg == "create" {
-			config.Mode = "create"
 		} else if arg == "dump" {
 			config.Mode = "dump"
 		} else {

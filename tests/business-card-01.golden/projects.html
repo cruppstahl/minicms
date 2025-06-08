@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/assets/site.webmanifest" />
+
+  <link rel="shortcut icon" href="/assets/favicon.ico" />
+  <title>John Doe</title>
+  <meta name="description" content="My personal business card">
+
+  <!-- Pico.css -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+
+  <!-- Custom template-->
+  <link rel="stylesheet" href="/assets/site.css">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Source+Serif+Pro:wght@300;400;600;700&display=swap">
+</head>
+
+<body>
+  <main class="container">
+    <div class="header">
+      <div class="header-left">
+        <h1>John Doe</h1>
+      </div>
+      <nav class="navigation">
+        
+        <a href="/" class="nav-link ">Home</a>
+        
+        <a href="/projects" class="nav-link active">Projects</a>
+        
+        <a href="/cv" class="nav-link ">CV</a>
+        
+      </nav>
+    </div>
+<section id="projects" class="section">
+  <div class="content">
+    <div class="projects-grid">
+      <div class="project-item">
+        <div class="project-title"><a href="https://upscaledb.com">upscaledb</a></div>
+        <div class="project-description">
+          A blazingly fast C/C++ embedded database library with analytical functions.
+        </div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-title"><a href="https://github.com/cruppstahl/upscaledb-mysql">upscaledb-mysql</a>
+        </div>
+        <div class="project-description">
+          Proof of concept for a MySQL storage engine based on upscaledb
+        </div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-title"><a href="https://github.com/cruppstahl/libfor">libfor</a></div>
+        <div class="project-description">
+          C library for Frame Of Reference 32bit integer compression
+        </div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-title"><a href="https://github.com/cruppstahl/libvbyte">libvbyte</a></div>
+        <div class="project-description">
+          C library for Varbyte/Varint 32bit/64bit integer compression w/ SIMD.
+        </div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-title"><a href="https://github.com/cruppstahl/sparsemap">sparsemap</a></div>
+        <div class="project-description">
+          C libary for storing sparse, compressed bitmaps.
+        </div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-title"><a href="https://arxiv.org/abs/1709.08990">Research: Stream VByte</a></div>
+        <div class="project-description">
+          Stream VByte: Faster Byte-Oriented Integer Compression (2017).
+        </div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-title"><a href="https://arxiv.org/abs/1611.05428">Research: Key Compression</a>
+        </div>
+        <div class="project-description">
+          Upscaledb: Efficient Integer-Key Compression in a Key-Value Store using SIMD Instructions (2016).
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+  <div class="footer">
+	Last update on June 7, 2025.
+  </div>
+</main>
+</body>
+</html>
