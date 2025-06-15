@@ -5,6 +5,6 @@ import (
 	"serve/core"
 )
 
-func RunVersion() {
+func Version() {
 	fmt.Printf("Version: %s\n", core.Version)
 }

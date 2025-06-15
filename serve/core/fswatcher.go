@@ -63,7 +63,7 @@ func InitializeFsWatcher(context *Context) error {
 						break
 					}
 
-					// If a file was changed then update the LookupIndedx
+					// If a file was changed then update the Filesystem
 					if isFile(event.Name) {
 						// Remove a potential .html suffix
 						changedPath = strings.TrimSuffix(changedPath, ".html")
@@ -97,7 +97,7 @@ func InitializeFsWatcher(context *Context) error {
 		}
 	}()
 
-	// Populate the LookupIndex
+	// Populate the Filesystem structure
 	contentRoot := filepath.Join(context.Config.SiteDirectory, "content")
 
 	// Add the /layout to the watcher, to get informed about changes in the html header/footer
@@ -108,9 +108,7 @@ func InitializeFsWatcher(context *Context) error {
 	// Recursively descend into all directories in /content and watch them
 	fsys := os.DirFS(contentRoot)
 	fs.WalkDir(fsys, ".", func(path string, dir fs.DirEntry, err error) error {
-		// Add this directory to the watcher
-		// TODO there might be a more efficient way then testing all files
-		if !isFile(path) {
+		if dir.IsDir() {
 			if err := context.Watcher.Add(path); err != nil {
 				return err
 			}

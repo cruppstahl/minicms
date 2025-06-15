@@ -10,7 +10,7 @@ import (
 	"serve/core"
 )
 
-func RunDump(context *core.Context) {
+func Dump(context *core.Context) {
 	ctxcopy := *context
 	outDir := ctxcopy.Config.OutDirectory
 	err := os.Mkdir(outDir, 0755)
@@ -18,7 +18,7 @@ func RunDump(context *core.Context) {
 		log.Fatalf("Failed to create directory %s: %v", outDir, err)
 	}
 
-	// LookupIndex has circular references which break the JSON serializer. Remove them,
+	// Filesystem has circular references which break the JSON serializer. Remove them,
 	// and remove other unsupported types
 	ctxcopy.Watcher = nil
 	for url, file := range ctxcopy.Navigation.Filesystem {

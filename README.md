@@ -90,17 +90,20 @@
 [ ] Use case: host technical documentation
     [x] Rename impl to core
     [x] Move command line option handlers to cmd (help, version, run, dump)
-    [ ] Support inline yaml for metadata (not in a separate file!)
-    	[ ] Should we still support the old file format? - yes!
-    	[ ] Add this to the tests
+    [ ] Rename "dump" command line option to "static" (including Makefile!)
+    [ ] Move file generation logic to new file (content.go)
     [ ] Add metadata option to ignore header/footer 
     	[ ] Add this to the tests
     [ ] Introduce a plugin mechanism
-    	[ ] ContentTypePlugins depend on content type and file extension, and transform
+    	[x] ContentTypePlugins depend on content type and file extension, and transform
 		a whole file
-    	[ ] Their ContentTypeManager (contenttype.go) gives them access to templates and
-		metadata
-    	[ ] This is a new plugin (plugins/contenttype/html.go)
+    	[x] Rewrite current logic as a new plugin
+    	[ ] The plugins decide about the mimetype
+    	[ ] The plugins decide whether header/footer is included (false for text/html)
+		-> this is stored in the metadata, and evaluated in the router
+    [ ] Support inline yaml for metadata (not in a separate file!)
+    	[ ] Should we still support the old file format? - yes!
+    	[ ] Add this to the tests
     [ ] Raw text is used as is, without header/footer
     	[ ] This is a new plugin (plugins/contenttype/text.go)
     [ ] Support markdown templating and formatting

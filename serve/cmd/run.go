@@ -6,7 +6,7 @@ import (
 	"serve/core"
 )
 
-func RunRun(context *core.Context) {
+func Run(context *core.Context) {
 	// The FsWatcher will invalidate cached file contents if the underlying file
 	// is changed
 	err := core.InitializeFsWatcher(context)

@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"text/template"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 )
@@ -97,6 +98,10 @@ func GetFileWithContent(path string, context *Context) (*File, error) {
 			file.CachedContent = []byte(body)
 			context.Navigation.Filesystem[normalizedPath] = file
 		}
+
+		// now render the template
+		ext := strings.ToLower(filepath.Ext(file.LocalPath))
+		GetContentTypePluginByExtension(&context.PluginManager, ext).Convert(context, &file)
 	}
 
 	return &file, nil
