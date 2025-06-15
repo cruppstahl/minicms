@@ -111,7 +111,7 @@ func InitializeRouter(context *Context) (*gin.Engine, error) {
 		c.Next()
 	})
 
-	// Go through the LookupIndex structure and set up the routes
+	// Go through the Filesystem structure and set up the routes
 	for url := range context.Navigation.Filesystem {
 		router.GET(url, func(c *gin.Context) {
 			// Don't forget type assertion when getting the connection from context.

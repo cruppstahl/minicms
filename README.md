@@ -67,7 +67,7 @@
     [x] cmd line args ("create business-card-01 --out=directory") then copy this
         template to a new (clean!) subdirectory!
 
-[ ] Build automated tests
+[x] Build automated tests
     [x] Support config option "dump template --out=directory"
     [x] Dump the whole context (including configuration, navigation etc)
         to a file ($out/context.json)
@@ -76,25 +76,53 @@
     [x] Then compare the output against .golden files
     [x] Look for a better library to parse command line args
         https://github.com/jessevdk/go-flags
-    [ ] Use fs.Walk in filesystem.go instead of storing Directory/Subdirectories
 
 [ ] Migrate crupp.de to the new solution
-	[ ] automate the deployment, e.g. in a docker container
-   	[ ] set up monitoring
+    [x] Add a command line option 'version' to print the version
+    [ ] Reduce width of the layout - it is too wide right now
+    [ ] Improve readability of the projects page
+    [ ] Add a bit more content to the main page (one or two sentences)
+    [ ] Automate the deployment, e.g. in a docker container
+    	[ ] Try without docker first, just by copying and running the binary
+    	[ ] Systemd sample file: https://rootknecht.net/knowledge/linux/systemd/#simple-generic-service-file
+    [ ] Set up monitoring (uptimerobot.com)
 
-[ ] use case: host technical documentation
-    [ ] self-host the documentation of what we have built so far
+[ ] Use case: host technical documentation
+    [ ] Rename impl to core
+    [ ] Move command line option handlers to cmd (help, version, run, dump)
+    [ ] Support inline yaml for metadata (not in a separate file!)
+    	[ ] Should we still support the old file format? - yes!
+    	[ ] Add this to the tests
+    [ ] Add metadata option to ignore header/footer 
+    	[ ] Add this to the tests
+    [ ] Introduce a plugin mechanism
+    	[ ] ContentTypePlugins depend on content type and file extension, and transform
+		a whole file
+    	[ ] Their ContentTypeManager (contenttype.go) gives them access to templates and
+		metadata
+    	[ ] This is a new plugin (plugins/contenttype/html.go)
+    [ ] Raw text is used as is, without header/footer
+    	[ ] This is a new plugin (plugins/contenttype/text.go)
     [ ] Support markdown templating and formatting
+	use github.com/yuin/goldmark
+    	[ ] This is a new plugin (plugins/contenttype/markdown.go)
     [ ] Source code is formatted in a different style, with syntax highlighting
+    [ ] Self-host the documentation of what we have built so far
+    [ ] Support documentation for different versions, e.g. of an API
     [ ] Add search functionality, with key words and full text
-    [ ] Use this to expand the test suite
+    [ ] Show date of last (file) update In the footer of each page
+    [ ] Expand the test suite
 
-[ ] use case: personal blog
-    [ ] parse navigation.yaml and use it to build routes
-    [ ] default index page shows all posts (configurable!)
-    [ ] site configuration specifies pagination etc
-    [ ] recreate auto-generated blog file if a post has been changed or
+[ ] Use case: personal blog
+    [ ] Default index page shows all posts (configurable!)
+    	[ ] This is a new plugin type (SnippetPlugin?)
+    [ ] Site configuration specifies pagination etc
+    [ ] Add RSS/Atom functionality
+    	[ ] This is a new plugin (plugins/contenttype/rss.go)
+    	[ ] This is a new plugin (plugins/contenttype/atom.go)
+    [ ] Recreate auto-generated blog file if a post has been changed or
         added/removed
+    [ ] Filter robots and spammers (see https://lambdacreate.com/posts/68)
 
-[ ] if a file or directory was added then support the route
+[ ] if a file or directory was added then add the route
 [ ] if a file or directory was removed then drop the route

@@ -62,11 +62,11 @@ func readDirectory(localPath string, context *Context) (Directory, error) {
 
 	// Iterate over the directory entries
 	for _, entry := range dirEntries {
-		if entry.IsDir() {
-			if strings.HasPrefix(entry.Name(), ".") {
-				continue // Skip hidden directories
-			}
+		if strings.HasPrefix(entry.Name(), ".") {
+			continue // Skip hidden files and directories
+		}
 
+		if entry.IsDir() {
 			// Set the directory path
 			subDirPath := filepath.Join(localPath, entry.Name())
 
@@ -131,10 +131,10 @@ func mimeType(ext string) string {
 }
 
 func addFilesystemEntry(context *Context, url string, file File) {
-	// Add the LookupItem to the LookupIndex
+	// Add the File to the Filesystem
 	_, exists := context.Navigation.Filesystem[url]
 	if exists {
-		log.Fatalf("Duplicate URL found in LookupIndex: %s", url)
+		log.Fatalf("Duplicate URL found in Filesystem: %s", url)
 	}
 	context.Navigation.Filesystem[url] = file
 }
@@ -142,7 +142,7 @@ func addFilesystemEntry(context *Context, url string, file File) {
 func populateFilesystem(directory *Directory, url string, context *Context) {
 	// Create a lookup item for all files in the current directory
 	for _, file := range directory.Files {
-		// Create a LookupItem for the file
+		// Create a File structure
 		base := filepath.Base(file.LocalPath)
 		ext := strings.ToLower(filepath.Ext(base))
 		base = strings.TrimSuffix(base, ext)
@@ -171,7 +171,7 @@ func InitializeFilesystem(context *Context) error {
 		return fmt.Errorf("failed to read %s directory: %w", contentRoot, err)
 	}
 
-	// Create LookupItems for all Files in the Directory
+	// Create structures for all Files in the Directory
 	populateFilesystem(&directory, "/", context)
 
 	return nil

@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"fmt"
 	"serve/impl"
 	"strconv"
 )
@@ -13,6 +14,12 @@ func main() {
 	// parse command line arguments
 	context.Config, err = impl.ParseCommandLineArguments()
 	if err != nil {
+		return
+	}
+
+	// If requested, print the version and leave
+	if context.Config.Mode == "version" {
+		fmt.Printf("Version: %s\n", impl.Version)
 		return
 	}
 

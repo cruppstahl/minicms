@@ -40,6 +40,7 @@ type Options struct {
 type Commands struct {
 	Run  RunCommand  `command:"run" description:"Run the server from a directory"`
 	Dump DumpCommand `command:"dump" description:"Generate and dump the full state of the template (for testing)"`
+	Version VersionCommand `command:"version" description:"Print the build version"`
 }
 
 type RunCommand struct {
@@ -52,6 +53,12 @@ type DumpCommand struct {
 	Args struct {
 		Template string `positional-arg-name:"template" description:"Template to dump"`
 	} `positional-args:"yes" required:"yes"`
+}
+
+type VersionCommand struct {
+	Args struct {
+		// Template string `positional-arg-name:"template" description:"Template to dump"`
+	} `positional-args:"no" required:"no"`
 }
 
 func ReadConfigYaml(config *Config, filePath string) error {
@@ -85,6 +92,8 @@ func ParseCommandLineArguments() (Config, error) {
 		"Run the server from the specified directory", &commands.Run)
 	parser.AddCommand("dump", "Generate and dump template state",
 		"Generate and dump the full state of the template (for testing)", &commands.Dump)
+	parser.AddCommand("version", "Print the build version",
+		"Print the build version", &commands.Version)
 
 	_, err := parser.Parse()
 	if err != nil {
@@ -113,6 +122,8 @@ func ParseCommandLineArguments() (Config, error) {
 		case "dump":
 			config.Mode = "dump"
 			config.SiteDirectory = commands.Dump.Args.Template
+		case "version":
+			config.Mode = "version"
 		}
 	}
 
