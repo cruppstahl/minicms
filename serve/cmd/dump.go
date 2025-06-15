@@ -1,4 +1,4 @@
-package impl
+package cmd
 
 import (
 	"encoding/json"
@@ -7,9 +7,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"serve/core"
 )
 
-func Dump(context *Context) {
+func RunDump(context *core.Context) {
 	ctxcopy := *context
 	outDir := ctxcopy.Config.OutDirectory
 	err := os.Mkdir(outDir, 0755)
@@ -38,7 +39,7 @@ func Dump(context *Context) {
 
 	// For each route: create the file
 	for url := range ctxcopy.Navigation.Filesystem {
-		file, err := GetFileWithContent(url, &ctxcopy)
+		file, err := core.GetFileWithContent(url, &ctxcopy)
 		if err != nil {
 			log.Fatalf("Failed to retrieve file contents: %v", err)
 		}

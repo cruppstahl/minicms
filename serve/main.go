@@ -2,35 +2,34 @@ package main
 
 import (
 	"log"
-	"fmt"
-	"serve/impl"
-	"strconv"
+	"serve/core"
+	"serve/cmd"
 )
 
 func main() {
 	var err error
-	var context impl.Context
+	var context core.Context
 
 	// parse command line arguments
-	context.Config, err = impl.ParseCommandLineArguments()
+	context.Config, err = core.ParseCommandLineArguments()
 	if err != nil {
 		return
 	}
 
 	// If requested, print the version and leave
 	if context.Config.Mode == "version" {
-		fmt.Printf("Version: %s\n", impl.Version)
+		cmd.RunVersion()
 		return
 	}
 
 	// Now read all yaml files and the file tree
-	err = impl.InitializeContext(&context)
+	err = core.InitializeContext(&context)
 	if err != nil {
 		log.Fatalf("Failed to initialize context: %v", err)
 	}
 
 	// Initialize the cached file system
-	err = impl.InitializeFilesystem(&context)
+	err = core.InitializeFilesystem(&context)
 	if err != nil {
 		log.Fatalf("Failed to initialize lookup index: %v", err)
 	}
@@ -39,29 +38,10 @@ func main() {
 	// This is used for testing (the directory can then be compared to
 	// a "golden" set of files, and any deviation is a bug)
 	if context.Config.Mode == "dump" {
-		impl.Dump(&context)
+		cmd.RunDump(&context)
 		return
 	}
 
 	// From here on we assume that we run the server
-
-	// The FsWatcher will invalidate cached file contents if the underlying file
-	// is changed
-	err = impl.InitializeFsWatcher(&context)
-	if err != nil {
-		log.Fatalf("failed to initialize file watcher: %v", err)
-	}
-	defer context.Watcher.Close()
-
-	// Set up the routes
-	router, err := impl.InitializeRouter(&context)
-	if err != nil {
-		log.Fatalf("Failed to set up routes: %v", err)
-	}
-
-	// Then run the server
-	err = router.Run(":" + strconv.Itoa(context.Config.Server.Port))
-	if err != nil {
-		log.Fatalf("Failed to run server: %v", err)
-	}
+	cmd.RunRun(&context)
 }

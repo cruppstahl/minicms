@@ -88,8 +88,8 @@
     [ ] Set up monitoring (uptimerobot.com)
 
 [ ] Use case: host technical documentation
-    [ ] Rename impl to core
-    [ ] Move command line option handlers to cmd (help, version, run, dump)
+    [x] Rename impl to core
+    [x] Move command line option handlers to cmd (help, version, run, dump)
     [ ] Support inline yaml for metadata (not in a separate file!)
     	[ ] Should we still support the old file format? - yes!
     	[ ] Add this to the tests
