@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 )
@@ -100,7 +100,7 @@ func GetFileWithContent(path string, context *Context) (*File, error) {
 		}
 
 		// now render the template
-		ext := strings.ToLower(filepath.Ext(file.LocalPath))
+		ext := strings.ToLower(strings.TrimPrefix(filepath.Ext(file.LocalPath), "."))
 		GetContentTypePluginByExtension(&context.PluginManager, ext).Convert(context, &file)
 	}
 

@@ -10,7 +10,7 @@ build:
 test: build
 	rm -rf ${TESTOUT}/*
 	mkdir -p ${TESTOUT}
-	${BIN} dump templates/business-card-01 --out=${TESTOUT}/business-card-01
+	${BIN} static templates/business-card-01 --out=${TESTOUT}/business-card-01
 	diff -r -q ${TESTOUT}/business-card-01 tests/business-card-01.golden
 	echo "All tests passed successfully"
 

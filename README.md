@@ -33,25 +33,25 @@
 [x] add favicon to site configuration (under "branding")
 [x] add route for static files (router.Static("/static", "./local-assets")
 [x] review templating - do we have enough data for a header/footer?
-	copy Navigation, (parts of)Config, Branding, Users
-	also copy relevant stuff from Directory, File (merge them - settings in
-	File have higher priority than those in Directory)
+    copy Navigation, (parts of)Config, Branding, Users
+    also copy relevant stuff from Directory, File (merge them - settings in
+    File have higher priority than those in Directory)
 [x] move custom css template (site.css) to Branding, use it in header.html
-	adjust header.html, footer.html
+    adjust header.html, footer.html
 [x] remove Directory and File structure in Navigation; Directory is only
-	required from the File struct itself (as a reference), but it is
-	not required as a standalone object
+    required from the File struct itself (as a reference), but it is
+    not required as a standalone object
 [x] File structure is only required in the LookupIndex
 [x] make File.CachedContent a byte array, not a string
 [x] if the data tree changes, then all dependent files need to be regenerated
-	[x] $site/layout: invalidate everything (i.e. delete CachedContent of all
+    [x] $site/layout: invalidate everything (i.e. delete CachedContent of all
         text/html files)
-	[x] directory: everything including/below that directory is
+    [x] directory: everything including/below that directory is
         invalidated
-	[x] directory metadata: everything including/below that directory is
+    [x] directory metadata: everything including/below that directory is
         invalidated
-	[x] file metadata: file is invalidated
-	[x] file: file is recreated
+    [x] file metadata: file is invalidated
+    [x] file: file is recreated
 
 [x] Create a default template for a minimalistic digital business card
     [x] Create a new layout for the new page
@@ -83,32 +83,32 @@
     [ ] Improve readability of the projects page
     [ ] Add a bit more content to the main page (one or two sentences)
     [ ] Automate the deployment, e.g. in a docker container
-    	[ ] Try without docker first, just by copying and running the binary
-    	[ ] Systemd sample file: https://rootknecht.net/knowledge/linux/systemd/#simple-generic-service-file
+        [ ] Try without docker first, just by copying and running the binary
+        [ ] Systemd sample file: https://rootknecht.net/knowledge/linux/systemd/#simple-generic-service-file
     [ ] Set up monitoring (uptimerobot.com)
 
 [ ] Use case: host technical documentation
     [x] Rename impl to core
     [x] Move command line option handlers to cmd (help, version, run, dump)
-    [ ] Rename "dump" command line option to "static" (including Makefile!)
+    [x] Rename "dump" command line option to "static" (including Makefile!)
     [ ] Move file generation logic to new file (content.go)
     [ ] Add metadata option to ignore header/footer 
-    	[ ] Add this to the tests
+        [ ] Add this to the tests
     [ ] Introduce a plugin mechanism
-    	[x] ContentTypePlugins depend on content type and file extension, and transform
-		a whole file
-    	[x] Rewrite current logic as a new plugin
-    	[ ] The plugins decide about the mimetype
-    	[ ] The plugins decide whether header/footer is included (false for text/html)
-		-> this is stored in the metadata, and evaluated in the router
+        [x] ContentTypePlugins depend on content type and file extension, and transform
+        a whole file
+        [x] Rewrite current logic as a new plugin
+        [ ] The plugins decide about the mimetype
+        [ ] The plugins decide whether header/footer is included (false for text/html)
+        -> this is stored in the metadata, and evaluated in the router
     [ ] Support inline yaml for metadata (not in a separate file!)
-    	[ ] Should we still support the old file format? - yes!
-    	[ ] Add this to the tests
+        [ ] Should we still support the old file format? - yes!
+        [ ] Add this to the tests
     [ ] Raw text is used as is, without header/footer
-    	[ ] This is a new plugin (plugins/contenttype/text.go)
+        [ ] This is a new plugin (plugins/contenttype/text.go)
     [ ] Support markdown templating and formatting
-	use github.com/yuin/goldmark
-    	[ ] This is a new plugin (plugins/contenttype/markdown.go)
+    use github.com/yuin/goldmark
+        [ ] This is a new plugin (plugins/contenttype/markdown.go)
     [ ] Source code is formatted in a different style, with syntax highlighting
     [ ] Self-host the documentation of what we have built so far
     [ ] Support documentation for different versions, e.g. of an API
@@ -116,13 +116,17 @@
     [ ] Show date of last (file) update In the footer of each page
     [ ] Expand the test suite
 
+[ ] Do a major round of refactoring
+    [ ] Review everything - is it idiomatic golang code?
+    [ ] Check the wordpress interface for plugins - did we miss anything?
+
 [ ] Use case: personal blog
     [ ] Default index page shows all posts (configurable!)
-    	[ ] This is a new plugin type (SnippetPlugin?)
+        [ ] This is a new plugin type (SnippetPlugin?)
     [ ] Site configuration specifies pagination etc
     [ ] Add RSS/Atom functionality
-    	[ ] This is a new plugin (plugins/contenttype/rss.go)
-    	[ ] This is a new plugin (plugins/contenttype/atom.go)
+        [ ] This is a new plugin (plugins/contenttype/rss.go)
+        [ ] This is a new plugin (plugins/contenttype/atom.go)
     [ ] Recreate auto-generated blog file if a post has been changed or
         added/removed
     [ ] Filter robots and spammers (see https://lambdacreate.com/posts/68)

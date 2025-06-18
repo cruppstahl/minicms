@@ -11,7 +11,7 @@
   "Config": {
     "FilePath": "templates/business-card-01/config/site.yaml",
     "SiteDirectory": "templates/business-card-01",
-    "Mode": "dump",
+    "Mode": "static",
     "OutDirectory": "/tmp/test-out/business-card-01",
     "Server": {
       "Port": 8080,
@@ -96,5 +96,6 @@
       }
     }
   },
+  "PluginManager": {},
   "Watcher": null
 }

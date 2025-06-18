@@ -38,8 +38,8 @@ type Options struct {
 
 // Commands defines the available subcommands
 type Commands struct {
-	Run  RunCommand  `command:"run" description:"Run the server from a directory"`
-	Dump DumpCommand `command:"dump" description:"Generate and dump the full state of the template (for testing)"`
+	Run     RunCommand     `command:"run" description:"Run the server from a directory"`
+	Static  StaticCommand  `command:"static" description:"Run as static html generator"`
 	Version VersionCommand `command:"version" description:"Print the build version"`
 }
 
@@ -49,15 +49,14 @@ type RunCommand struct {
 	} `positional-args:"yes" required:"yes"`
 }
 
-type DumpCommand struct {
+type StaticCommand struct {
 	Args struct {
-		Template string `positional-arg-name:"template" description:"Template to dump"`
+		Directory string `positional-arg-name:"directory" description:"Directory with source files"`
 	} `positional-args:"yes" required:"yes"`
 }
 
 type VersionCommand struct {
 	Args struct {
-		// Template string `positional-arg-name:"template" description:"Template to dump"`
 	} `positional-args:"no" required:"no"`
 }
 
@@ -90,8 +89,8 @@ func ParseCommandLineArguments() (Config, error) {
 	parser := flags.NewParser(&opts, flags.Default)
 	parser.AddCommand("run", "Run the server from a directory",
 		"Run the server from the specified directory", &commands.Run)
-	parser.AddCommand("dump", "Generate and dump template state",
-		"Generate and dump the full state of the template (for testing)", &commands.Dump)
+	parser.AddCommand("static", "Generate static html files",
+		"Generate static html files for the specified directory", &commands.Static)
 	parser.AddCommand("version", "Print the build version",
 		"Print the build version", &commands.Version)
 
@@ -119,9 +118,9 @@ func ParseCommandLineArguments() (Config, error) {
 		case "run":
 			config.Mode = "run"
 			config.SiteDirectory = commands.Run.Args.Directory
-		case "dump":
-			config.Mode = "dump"
-			config.SiteDirectory = commands.Dump.Args.Template
+		case "static":
+			config.Mode = "static"
+			config.SiteDirectory = commands.Static.Args.Directory
 		case "version":
 			config.Mode = "version"
 		}

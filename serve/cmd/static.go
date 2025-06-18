@@ -6,11 +6,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"serve/core"
+	"strings"
 )
 
-func Dump(context *core.Context) {
+func Static(context *core.Context) {
 	ctxcopy := *context
 	outDir := ctxcopy.Config.OutDirectory
 	err := os.Mkdir(outDir, 0755)

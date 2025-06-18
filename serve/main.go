@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
-	"serve/core"
 	"serve/cmd"
+	"serve/core"
 	"serve/plugins/contenttype"
 )
 
@@ -48,8 +48,8 @@ func main() {
 	// If requested, dump the whole context and the file tree to a directory
 	// This is used for testing (the directory can then be compared to
 	// a "golden" set of files, and any deviation is a bug)
-	if context.Config.Mode == "dump" {
-		cmd.Dump(&context)
+	if context.Config.Mode == "static" {
+		cmd.Static(&context)
 		return
 	}
 
