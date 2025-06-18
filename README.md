@@ -91,7 +91,7 @@
     [x] Rename impl to core
     [x] Move command line option handlers to cmd (help, version, run, dump)
     [x] Rename "dump" command line option to "static" (including Makefile!)
-    [ ] Move file generation logic to new file (content.go)
+    [x] Move file generation logic to new file (content.go)
     [ ] Add metadata option to ignore header/footer 
         [ ] Add this to the tests
     [ ] Introduce a plugin mechanism
