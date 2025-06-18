@@ -77,15 +77,18 @@
     [x] Look for a better library to parse command line args
         https://github.com/jessevdk/go-flags
 
-[ ] Migrate crupp.de to the new solution
+[x] Migrate crupp.de to the new solution
     [x] Add a command line option 'version' to print the version
-    [ ] Reduce width of the layout - it is too wide right now
-    [ ] Improve readability of the projects page
-    [ ] Add a bit more content to the main page (one or two sentences)
-    [ ] Automate the deployment, e.g. in a docker container
-        [ ] Try without docker first, just by copying and running the binary
-        [ ] Systemd sample file: https://rootknecht.net/knowledge/linux/systemd/#simple-generic-service-file
-    [ ] Set up monitoring (uptimerobot.com)
+    [x] Reduce width of the layout - it is too wide right now
+    [x] Improve readability of the projects page
+    [x] Automate the deployment, e.g. in a docker container
+        [x] Try without docker first, just by copying and running the binary
+        [x] Systemd sample file: https://rootknecht.net/knowledge/linux/systemd/#simple-generic-service-file
+    [x] Set up monitoring (uptimerobot.com)
+
+!!!
+!!! When running serve in ~/prj/miniblog, it will also react to changes
+!!! in README.md (which is outside of the file tree)
 
 [ ] Use case: host technical documentation
     [x] Rename impl to core
