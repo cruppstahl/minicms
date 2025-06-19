@@ -83,18 +83,19 @@
     [x] Improve readability of the projects page
     [x] Automate the deployment, e.g. in a docker container
         [x] Try without docker first, just by copying and running the binary
-        [x] Systemd sample file: https://rootknecht.net/knowledge/linux/systemd/#simple-generic-service-file
+        [x] Use systemd to run the service
     [x] Set up monitoring (uptimerobot.com)
 
 !!!
-!!! When running serve in ~/prj/miniblog, it will also react to changes
-!!! in README.md (which is outside of the file tree)
+!!! HEAD requests are not supported (curl -I https://reqbin.com/echo)
 
 [ ] Use case: host technical documentation
     [x] Rename impl to core
     [x] Move command line option handlers to cmd (help, version, run, dump)
     [x] Rename "dump" command line option to "static" (including Makefile!)
     [x] Move file generation logic to new file (content.go)
+    [x] When running serve in ~/prj/miniblog, it will also react to changes
+        in README.md (which is outside of the file tree)
     [ ] Add metadata option to ignore header/footer 
         [ ] Add this to the tests
     [ ] Introduce a plugin mechanism

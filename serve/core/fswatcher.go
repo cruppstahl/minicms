@@ -109,7 +109,7 @@ func InitializeFsWatcher(context *Context) error {
 	fsys := os.DirFS(contentRoot)
 	fs.WalkDir(fsys, ".", func(path string, dir fs.DirEntry, err error) error {
 		if dir.IsDir() {
-			if err := context.Watcher.Add(path); err != nil {
+			if err := context.Watcher.Add(filepath.Join(contentRoot, path)); err != nil {
 				return err
 			}
 		}
