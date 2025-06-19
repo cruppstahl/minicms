@@ -12,13 +12,14 @@ import (
 
 type File struct {
 	LocalPath     string
-	Title         string
-	Author        string
-	Tags          []string
-	ImagePath     string
+	Title         string   `yaml:"title"`
+	Author        string   `yaml:"author"`
+	Tags          []string `yaml:"tags"`
+	ImagePath     string   `yaml:"image"`
 	CssFile       string
 	MimeType      string
 	CachedContent []byte
+	IgnoreLayout  bool       `yaml:"ignore-layout"`
 	Directory     *Directory // The directory this file belongs to
 }
 
@@ -79,6 +80,8 @@ func readDirectory(localPath string, context *Context) (Directory, error) {
 			directory.Subdirectories[entry.Name()] = subDir
 		} else {
 			// Ignore file unless the extension is ".md", ".txt", or ".html"
+			// TODO ignore the file if the PluginManager does not have a plugin
+			// for this file type
 			ext := strings.ToLower(filepath.Ext(entry.Name()))
 			if ext != ".md" && ext != ".txt" && ext != ".html" {
 				continue

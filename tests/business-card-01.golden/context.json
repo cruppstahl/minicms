@@ -59,6 +59,7 @@
         "CssFile": "",
         "MimeType": "text/html",
         "CachedContent": null,
+        "IgnoreLayout": false,
         "Directory": null
       },
       "/cv": {
@@ -70,6 +71,7 @@
         "CssFile": "",
         "MimeType": "text/html",
         "CachedContent": null,
+        "IgnoreLayout": false,
         "Directory": null
       },
       "/index": {
@@ -81,6 +83,7 @@
         "CssFile": "",
         "MimeType": "text/html",
         "CachedContent": null,
+        "IgnoreLayout": false,
         "Directory": null
       },
       "/projects": {
@@ -92,6 +95,7 @@
         "CssFile": "",
         "MimeType": "text/html",
         "CachedContent": null,
+        "IgnoreLayout": false,
         "Directory": null
       }
     }

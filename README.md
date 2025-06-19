@@ -89,6 +89,9 @@
 !!!
 !!! HEAD requests are not supported (curl -I https://reqbin.com/echo)
 
+!!!
+!!! http://localhost:8080 returns 404 when running templates/current 
+
 [ ] Use case: host technical documentation
     [x] Rename impl to core
     [x] Move command line option handlers to cmd (help, version, run, dump)
@@ -96,8 +99,8 @@
     [x] Move file generation logic to new file (content.go)
     [x] When running serve in ~/prj/miniblog, it will also react to changes
         in README.md (which is outside of the file tree)
-    [ ] Add metadata option to ignore header/footer 
-        [ ] Add this to the tests
+    [x] Add metadata option to ignore header/footer 
+        [x] Add this to the tests
     [ ] Introduce a plugin mechanism
         [x] ContentTypePlugins depend on content type and file extension, and transform
         a whole file

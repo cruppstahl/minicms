@@ -18,15 +18,18 @@ func normalizePath(path string) string {
 }
 
 func fetchFileBody(file *File, context *Context) (string, error) {
-	header, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/header.html")
-	footer, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/footer.html")
-
-	// Read content from file.LocalPath and store it in file.Content
 	body, err := os.ReadFile(file.LocalPath)
 	if err != nil {
 		log.Printf("failed to read file content for %s: %s", file.LocalPath, err)
 		return "", err
 	}
+
+	if file.IgnoreLayout {
+		return string(body), nil
+	}
+
+	header, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/header.html")
+	footer, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/footer.html")
 	return string(header) + string(body) + string(footer), nil
 }
 
@@ -43,13 +46,12 @@ func applyTemplate(body string, file *File, context *Context) (string, error) {
 		"Site.Author.Name": context.Users.Users[0].Name, // Assuming at least one user exists
 		"BrandingFavicon":  context.Config.Branding.Favicon,
 		"BrandingCssFile":  context.Config.Branding.CssFile,
-		"FileTitle":        file.Title,
-		"FileAuthor":       file.Author,
-		"FileTags":         file.Tags,
-		"FileImagePath":    file.ImagePath,
-		"FileCssFile":      file.CssFile,
-		"FileMimeType":     file.MimeType,
-		"FileLocalPath":    file.LocalPath,
+		"PageTitle":        file.Title,
+		"PageAuthor":       file.Author,
+		"PageTags":         file.Tags,
+		"PageImagePath":    file.ImagePath,
+		"PageCssFile":      file.CssFile,
+		"PageMimeType":     file.MimeType,
 		"ActiveUrl":        "", // This will be set below
 	}
 
@@ -84,8 +86,10 @@ func GetFileWithContent(path string, context *Context) (*File, error) {
 	}
 
 	// If the file is not cached then build it
+	var body string
+	var err error
 	if len(file.CachedContent) == 0 {
-		body, err := fetchFileBody(&file, context)
+		body, err = fetchFileBody(&file, context)
 		if err != nil {
 			return nil, err
 		}
