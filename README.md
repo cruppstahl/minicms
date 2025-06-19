@@ -114,11 +114,11 @@
     [x] Support inline yaml for metadata (not in a separate file!)
         [x] Should we still support the old file format? - yes!
         [x] Add this to the tests
-    [ ] Support markdown templating and formatting with github.com/yuin/goldmark
-        [ ] This is a new plugin (plugins/contenttype/markdown.go)
-        [ ] Source code is formatted in a different style, with syntax
+    [x] Support markdown templating and formatting with github.com/yuin/goldmark
+        [x] This is a new plugin (plugins/contenttype/markdown.go)
+        [x] Source code is formatted in a different style, with syntax
             highlighting
-        [ ] Use this *after* templating!
+        [x] Use this *after* templating!
     [ ] Self-host the documentation of what we have built so far
         [ ] Look for a nice template
     [ ] Support documentation for different versions, e.g. of an API

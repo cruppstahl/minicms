@@ -10,8 +10,8 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/main.go",
-            // "args": ["static", "../templates/business-card-01", "--out=/tmp/outdir"]
-            "args": ["run", "../templates/current"]
+            "args": ["static", "../templates/business-card-01", "--out=/tmp/outdir"]
+            // "args": ["run", "../templates/current"]
         },
        
     ]

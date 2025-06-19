@@ -49,7 +49,56 @@
         "IsActive": false
       }
     ],
-    "Filesystem": {}
+    "Filesystem": {
+      "/": {
+        "LocalPath": "templates/business-card-01/content/index.html",
+        "Title": "index.",
+        "Author": "",
+        "Tags": null,
+        "ImagePath": "",
+        "CssFile": "",
+        "MimeType": "text/html",
+        "CachedContent": null,
+        "IgnoreLayout": false,
+        "Directory": null
+      },
+      "/cv": {
+        "LocalPath": "templates/business-card-01/content/cv.html",
+        "Title": "cv.",
+        "Author": "",
+        "Tags": null,
+        "ImagePath": "",
+        "CssFile": "",
+        "MimeType": "text/html",
+        "CachedContent": null,
+        "IgnoreLayout": false,
+        "Directory": null
+      },
+      "/index": {
+        "LocalPath": "templates/business-card-01/content/index.html",
+        "Title": "index.",
+        "Author": "",
+        "Tags": null,
+        "ImagePath": "",
+        "CssFile": "",
+        "MimeType": "text/html",
+        "CachedContent": null,
+        "IgnoreLayout": false,
+        "Directory": null
+      },
+      "/projects": {
+        "LocalPath": "templates/business-card-01/content/projects.html",
+        "Title": "projects.",
+        "Author": "",
+        "Tags": null,
+        "ImagePath": "",
+        "CssFile": "",
+        "MimeType": "text/html",
+        "CachedContent": null,
+        "IgnoreLayout": false,
+        "Directory": null
+      }
+    }
   },
   "PluginManager": {},
   "Watcher": null

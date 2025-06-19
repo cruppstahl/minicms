@@ -13,7 +13,7 @@ type ContentTypePlugin interface {
 	IgnoreLayout() bool
 	Extensions() []string
 
-	Convert(context *Context, file *File) error
+	Convert(raw string) (string, error)
 }
 
 type PluginManager struct {

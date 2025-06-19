@@ -1,7 +1,8 @@
 LocalPath: templates/business-card-01/content/projects.html
-Title: projects
+Title: projects.
 Author: 
 Tags: []
 ImagePath: 
 CssFile: 
 MimeType: text/html
+IgnoreLayout: false

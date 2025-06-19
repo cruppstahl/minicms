@@ -20,7 +20,7 @@ func (ContentTypeTextPlugin) Id() string           { return "61F80BE4-5805-4C65-
 func (ContentTypeTextPlugin) Description() string  { return "Renders text files" }
 func (ContentTypeTextPlugin) Extensions() []string { return []string{"text", "txt"} }
 
-func (ContentTypeTextPlugin) Convert(context *core.Context, file *core.File) error {
+func (ContentTypeTextPlugin) Convert(raw string) (string, error) {
 	// no need to do anything to render a text file
-	return nil
+	return raw, nil
 }

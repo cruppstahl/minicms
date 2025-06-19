@@ -20,7 +20,7 @@ func (ContentTypeHtmlPlugin) Id() string           { return "8459719D-0E43-42B9-
 func (ContentTypeHtmlPlugin) Description() string  { return "Renders html files" }
 func (ContentTypeHtmlPlugin) Extensions() []string { return []string{"html", "htm"} }
 
-func (ContentTypeHtmlPlugin) Convert(context *core.Context, file *core.File) error {
+func (ContentTypeHtmlPlugin) Convert(raw string) (string, error) {
 	// no need to do anything to render a html file
-	return nil
+	return raw, nil
 }
