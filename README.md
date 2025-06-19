@@ -101,27 +101,32 @@
         in README.md (which is outside of the file tree)
     [x] Add metadata option to ignore header/footer 
         [x] Add this to the tests
-    [ ] Introduce a plugin mechanism
+    [x] Introduce a plugin mechanism
         [x] ContentTypePlugins depend on content type and file extension, and transform
         a whole file
         [x] Rewrite current logic as a new plugin
-        [ ] The plugins decide about the mimetype
-        [ ] The plugins decide whether header/footer is included (false for text/html)
+        [x] The plugins decide about the mimetype
+        [x] The plugins decide whether header/footer is included (false for text/html)
         -> this is stored in the metadata, and evaluated in the router
-    [ ] Support inline yaml for metadata (not in a separate file!)
-        [ ] Should we still support the old file format? - yes!
-        [ ] Add this to the tests
-    [ ] Raw text is used as is, without header/footer
-        [ ] This is a new plugin (plugins/contenttype/text.go)
-    [ ] Support markdown templating and formatting
-    use github.com/yuin/goldmark
+    [x] Raw text is used as is, without header/footer
+        [x] This is a new plugin (plugins/contenttype/text.go)
+        [x] Add this to the tests
+    [x] Support inline yaml for metadata (not in a separate file!)
+        [x] Should we still support the old file format? - yes!
+        [x] Add this to the tests
+    [ ] Support markdown templating and formatting with github.com/yuin/goldmark
         [ ] This is a new plugin (plugins/contenttype/markdown.go)
-    [ ] Source code is formatted in a different style, with syntax highlighting
+        [ ] Source code is formatted in a different style, with syntax
+            highlighting
+        [ ] Use this *after* templating!
     [ ] Self-host the documentation of what we have built so far
+        [ ] Look for a nice template
     [ ] Support documentation for different versions, e.g. of an API
-    [ ] Add search functionality, with key words and full text
-    [ ] Show date of last (file) update In the footer of each page
+    [ ] Add search functionality, with keywords and full text
+    [ ] Show date of last (file) update in the footer of each page
     [ ] Expand the test suite
+    [ ] Support custom 404 page (/content/404.*), including metadata
+        [ ] Add one to crupp.de
 
 [ ] Do a major round of refactoring
     [ ] Review everything - is it idiomatic golang code?

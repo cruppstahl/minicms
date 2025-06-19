@@ -44,7 +44,7 @@ func Static(context *core.Context) {
 			log.Fatalf("Failed to retrieve file contents: %v", err)
 		}
 		// split url in path and file name
-		path := filepath.Dir(url)
+		path := filepath.Join(outDir, "content", filepath.Dir(url))
 		base := filepath.Base(file.LocalPath)
 
 		// Create the metadata for the file
@@ -61,20 +61,21 @@ func Static(context *core.Context) {
 		metadata += fmt.Sprintf("ImagePath: %s\n", file.ImagePath)
 		metadata += fmt.Sprintf("CssFile: %s\n", file.CssFile)
 		metadata += fmt.Sprintf("MimeType: %s\n", file.MimeType)
+		metadata += fmt.Sprintf("IgnoreLayout: %t\n", file.IgnoreLayout)
 
 		if file.Directory != nil {
 			metadata += fmt.Sprintf("Directory.CssFile: %s\n", file.Directory.CssFile)
 			metadata += fmt.Sprintf("Directory.title: %s\n", file.Directory.Title)
 		}
 
-		outPath = filepath.Join(outDir, path, base) + ".metadata"
+		outPath = filepath.Join(path, base) + ".yaml"
 		err = os.WriteFile(outPath, []byte(metadata), 0644)
 		if err != nil {
 			log.Fatalf("Failed to create %s: %v", outPath, err)
 		}
 
 		// Write the cached file content
-		outPath = filepath.Join(outDir, path, base)
+		outPath = filepath.Join(path, base)
 		err = os.WriteFile(outPath, file.CachedContent, 0644)
 		if err != nil {
 			log.Fatalf("Failed to create %s: %v", outPath, err)

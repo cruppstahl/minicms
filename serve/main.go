@@ -36,14 +36,14 @@ func main() {
 		log.Fatalf("Failed to initialize context: %v", err)
 	}
 
+	// Register all builtin plugins
+	registerPlugins(&context)
+
 	// Initialize the cached file system
 	err = core.InitializeFilesystem(&context)
 	if err != nil {
 		log.Fatalf("Failed to initialize lookup index: %v", err)
 	}
-
-	// Register all builtin plugins
-	registerPlugins(&context)
 
 	// If requested, dump the whole context and the file tree to a directory
 	// This is used for testing (the directory can then be compared to

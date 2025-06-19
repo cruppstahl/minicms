@@ -10,14 +10,15 @@ type ContentTypePlugin interface {
 	Id() string
 	Version() string
 	Mimetype() string
+	IgnoreLayout() bool
 	Extensions() []string
 
 	Convert(context *Context, file *File) error
 }
 
 type PluginManager struct {
-	contentTypePlugins     map[string]ContentTypePlugin
-	fileExtensions	       map[string]ContentTypePlugin
+	contentTypePlugins map[string]ContentTypePlugin
+	fileExtensions     map[string]ContentTypePlugin
 }
 
 var ErrPluginAlreadyRegistered = errors.New("Plugin already registered")
@@ -41,8 +42,12 @@ func RegisterContentTypePlugin(manager *PluginManager, plugin ContentTypePlugin)
 	return nil
 }
 
-func GetContentTypePluginByExtension(mgr *PluginManager, ext string) ContentTypePlugin {
-	return mgr.fileExtensions[strings.ToLower(ext)]
+func GetContentTypePluginByExtension(mgr *PluginManager, ext string) (ContentTypePlugin, bool) {
+	ext = strings.ToLower(ext)
+	if plugin, exists := mgr.fileExtensions[ext]; exists {
+		return plugin, true
+	}
+	return nil, false
 }
 
 func CreatePluginManager() (PluginManager, error) {

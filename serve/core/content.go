@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/adrg/frontmatter"
 )
 
 func normalizePath(path string) string {
@@ -18,19 +20,26 @@ func normalizePath(path string) string {
 }
 
 func fetchFileBody(file *File, context *Context) (string, error) {
-	body, err := os.ReadFile(file.LocalPath)
+	bytes, err := os.ReadFile(file.LocalPath)
 	if err != nil {
 		log.Printf("failed to read file content for %s: %s", file.LocalPath, err)
 		return "", err
 	}
+	body := string(bytes)
 
 	if file.IgnoreLayout {
-		return string(body), nil
+		return body, nil
+	}
+
+	// Skip any frontmatter - it was already parsed into the File struct
+	rest, err := frontmatter.Parse(strings.NewReader(string(body)), &file)
+	if err == nil {
+		body = string(rest)
 	}
 
 	header, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/header.html")
 	footer, _ := os.ReadFile(context.Config.SiteDirectory + "/layout/footer.html")
-	return string(header) + string(body) + string(footer), nil
+	return string(header) + body + string(footer), nil
 }
 
 func applyTemplate(body string, file *File, context *Context) (string, error) {
@@ -103,7 +112,8 @@ func GetFileWithContent(path string, context *Context) (*File, error) {
 
 		// now render the template
 		ext := strings.ToLower(strings.TrimPrefix(filepath.Ext(file.LocalPath), "."))
-		GetContentTypePluginByExtension(&context.PluginManager, ext).Convert(context, &file)
+		plugin, _ := GetContentTypePluginByExtension(&context.PluginManager, ext)
+		plugin.Convert(context, &file)
 	}
 
 	return &file, nil

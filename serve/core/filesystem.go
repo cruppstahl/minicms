@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/adrg/frontmatter"
 	"github.com/goccy/go-yaml"
 )
 
@@ -29,6 +30,43 @@ type Directory struct {
 	CssFile        string `yaml:"cssfile"`
 	Subdirectories map[string]Directory
 	Files          map[string]File
+}
+
+func createFileStruct(filePath string, fileName string, directory *Directory, plugin ContentTypePlugin) (File, error) {
+	ext := strings.TrimLeft(strings.ToLower(filepath.Ext(fileName)), ".")
+
+	// Create a File struct and populate its fields
+	file := File{
+		LocalPath:    filePath,
+		Title:        strings.TrimSuffix(fileName, ext),
+		MimeType:     plugin.Mimetype(),
+		IgnoreLayout: plugin.IgnoreLayout(),
+		Directory:    directory,
+	}
+
+	// Check if the file has a corresponding .yaml file for metadata
+	metadataFilePath := filePath + ".yaml"
+	metadataFile, err := os.Open(metadataFilePath)
+	if err == nil {
+		defer metadataFile.Close()
+		// Decode the metadata file into the File struct
+		decoder := yaml.NewDecoder(metadataFile)
+		if err := decoder.Decode(&file); err != nil {
+			log.Printf("Failed to decode metadata for file %s: %v", metadataFilePath, err)
+			return file, err
+		}
+	}
+
+	// Read the file and extract any frontmatter, if available
+	body, err := os.ReadFile(file.LocalPath)
+	if err != nil {
+		log.Printf("failed to read file content for %s: %s", file.LocalPath, err)
+		return file, err
+	}
+
+	// Simply parse the frontmatter from the file content, and ignore any errors
+	frontmatter.Parse(strings.NewReader(string(body)), &file)
+	return file, nil
 }
 
 func readDirectory(localPath string, context *Context) (Directory, error) {
@@ -79,36 +117,20 @@ func readDirectory(localPath string, context *Context) (Directory, error) {
 			}
 			directory.Subdirectories[entry.Name()] = subDir
 		} else {
-			// Ignore file unless the extension is ".md", ".txt", or ".html"
-			// TODO ignore the file if the PluginManager does not have a plugin
-			// for this file type
-			ext := strings.ToLower(filepath.Ext(entry.Name()))
-			if ext != ".md" && ext != ".txt" && ext != ".html" {
+			fileName := entry.Name()
+			filePath := filepath.Join(localPath, fileName)
+
+			// Ignore the file if the PluginManager does not have a plugin for this file type
+			ext := strings.TrimLeft(strings.ToLower(filepath.Ext(fileName)), ".")
+			plugin, exists := GetContentTypePluginByExtension(&context.PluginManager, ext)
+			if !exists {
 				continue
 			}
 
-			// Set the file path
-			filePath := filepath.Join(localPath, entry.Name())
-
-			// Create a File struct and populate its fields
-			file := File{
-				LocalPath: filePath,
-				Title:     strings.TrimSuffix(entry.Name(), ext),
-				MimeType:  mimeType(strings.TrimLeft(ext, ".")),
-				Directory: &directory,
-			}
-
-			// Check if the file has a corresponding .yaml file for metadata
-			metadataFilePath := filePath + ".yaml"
-			metadataFile, err := os.Open(metadataFilePath)
-			if err == nil {
-				defer metadataFile.Close()
-				// Decode the metadata file into the File struct
-				decoder := yaml.NewDecoder(metadataFile)
-				if err := decoder.Decode(&file); err != nil {
-					log.Printf("Failed to decode metadata for file %s: %v", metadataFilePath, err)
-					continue
-				}
+			file, err := createFileStruct(filePath, fileName, &directory, plugin)
+			if err != nil {
+				log.Printf("Failed to create file struct for %s: %v", filePath, err)
+				continue
 			}
 
 			// Append the file to the directory's Files slice
@@ -118,19 +140,6 @@ func readDirectory(localPath string, context *Context) (Directory, error) {
 	}
 
 	return directory, nil
-}
-
-func mimeType(ext string) string {
-	switch ext {
-	case "md":
-		return "text/html" // Markdown files are served as HTML
-	case "txt":
-		return "text/html" // Same about text files
-	case "html":
-		return "text/html"
-	default:
-		return "application/octet-stream" // Default MIME type for unknown files
-	}
 }
 
 func addFilesystemEntry(context *Context, url string, file File) {
