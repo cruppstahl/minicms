@@ -1,0 +1,6 @@
+users:
+  - name: chris
+    fullname: Christoph Rupp
+  - name: test
+    fullname: A test author
+

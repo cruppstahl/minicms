@@ -86,12 +86,6 @@
         [x] Use systemd to run the service
     [x] Set up monitoring (uptimerobot.com)
 
-!!!
-!!! HEAD requests are not supported (curl -I https://reqbin.com/echo)
-
-!!!
-!!! http://localhost:8080 returns 404 when running templates/current 
-
 [ ] Use case: host technical documentation
     [x] Rename impl to core
     [x] Move command line option handlers to cmd (help, version, run, dump)
@@ -120,13 +114,34 @@
             highlighting
         [x] Use this *after* templating!
     [ ] Self-host the documentation of what we have built so far
-        [ ] Look for a nice template
-    [ ] Support documentation for different versions, e.g. of an API
+        [x] Create a nice template
+        [x] Set up the boilerplate for the project and a main dummy page
+            in markdown
+        [x] Create sample content (about 10 pages)
+
+!!!
+!!! Route for localhost:8080/ does not exist (but should be)
+
+        [ ] Create main (left) navigation dynamically
+        [ ] Create lower-level (right) navigation dynamically
+        [ ] Support documentation for different versions, e.g. of an API,
+            through the navigation
     [ ] Add search functionality, with keywords and full text
+        [ ] Build an index which gets invalidated if any file changes?
     [ ] Show date of last (file) update in the footer of each page
-    [ ] Expand the test suite
-    [ ] Support custom 404 page (/content/404.*), including metadata
+    [ ] Use the new documentation tool as a second test project
+    [ ] Support custom 404 page (/content/404.\*), including metadata
         [ ] Add one to crupp.de
+    [ ] Verify that the navigation can link to completely different directories
+        (e.g. blog and documentation are maintained by different teams, and
+        therefore stored in different repositories)
+        [ ] Create a test case for this
+
+!!!
+!!! HEAD requests are not supported (curl -I https://reqbin.com/echo)
+
+!!!
+!!! http://localhost:8080 returns 404 when running templates/current 
 
 [ ] Do a major round of refactoring
     [ ] Review everything - is it idiomatic golang code?

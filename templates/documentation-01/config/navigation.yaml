@@ -1,0 +1,17 @@
+main:
+  - local-path: "/docs"
+    url: "/"
+    children:
+      - local-path: "/docs/api"
+        url: "/api"
+      - local-path: "/getting-started"
+        url: "/getting-started"
+      - local-path: "/core-concepts"
+        url: "/core-concepts"
+      - local-path: "/advanced"
+        url: "/advanced"
+      - local-path: "/reference"
+        url: "/reference"
+  - local-path: "/about"
+    url: "/about"
+

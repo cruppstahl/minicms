@@ -1,0 +1,10 @@
+server:
+  port: 8080
+  hostname: crupp.de
+  title: TechDocs
+  description: Sample project for technical documentation with MiniCMS
+
+branding:
+  favicon: /assets/favicon.png
+  cssfile: /assets/site.css
+
