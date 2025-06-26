@@ -113,23 +113,32 @@
         [x] Source code is formatted in a different style, with syntax
             highlighting
         [x] Use this *after* templating!
-    [ ] Self-host the documentation of what we have built so far
+    [x] Create a template for the documentation use case
         [x] Create a nice template
         [x] Set up the boilerplate for the project and a main dummy page
             in markdown
         [x] Create sample content (about 10 pages)
 
-!!!
-!!! Route for localhost:8080/ does not exist (but should be)
+    [ ] Revisit the navigation.yaml file
+        [ ] Get rid of "Label" - use the .Title tag from the metadata
+            [ ] By default, use the file name - respect Lower/Uppercase!
+        [ ] Remove .Url - use the relative file path instead
+        [ ] Build navigation dynamically - it's in the file tree!
+            [ ] But add a metadata flag "hide from navigation"
 
-        [ ] Create main (left) navigation dynamically
+    [ ] Self-host the documentation of what we have built so far
+        [ ] Create main (left) navigation dynamically w/ configuration
         [ ] Create lower-level (right) navigation dynamically
+            JS code goes through the main content div, extracts h1,h2,h3
         [ ] Support documentation for different versions, e.g. of an API,
-            through the navigation
+            through the navigation (needs product discovery!)
     [ ] Add search functionality, with keywords and full text
-        [ ] Build an index which gets invalidated if any file changes?
+        [ ] Integrate bleve (https://claude.ai/chat/ba078972-162e-4c60-87fd-e7956a15f488)
+        [ ] Rebuild search index (async) if cache is invalidated
+        [ ] Implement Search as a plugin: only activate it if it is enabled
     [ ] Show date of last (file) update in the footer of each page
     [ ] Use the new documentation tool as a second test project
+    [ ] Specify a root index in the site configuration (implement as redirect)
     [ ] Support custom 404 page (/content/404.\*), including metadata
         [ ] Add one to crupp.de
     [ ] Verify that the navigation can link to completely different directories

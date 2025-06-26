@@ -44,7 +44,21 @@
 
     <!-- Layout -->
     <div class="layout">
+
         <!-- Left Sidebar -->
+        <nav class="sidebar" id="sidebar">
+          {{ range .Navigation }}
+            <div class="sidebar-section">
+	      <div class="sidebar-title">{{ .Label}}</div>
+              {{ range .Children }}
+                <a href="{{ .Url }}" class="sidebar-item {{ if .IsActive }}active{{ end }}">{{ .Label }}</a>
+              {{ end }}
+          {{ end }}
+        </nav>
+
+
+
+        <!-- Left Sidebar
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-section">
                 <div class="sidebar-title">Getting Started</div>
@@ -77,6 +91,8 @@
                 <a href="#" class="sidebar-item" onclick="loadContent('migration')">Migration Guide</a>
             </div>
         </nav>
+ -->
+
 
         <!-- Main Content -->
         <main class="main-content">
