@@ -1,57 +1,55 @@
 package core
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-
-	"github.com/goccy/go-yaml"
-)
-
 type Navigation struct {
-	FilePath       string
-	NavigationTree []NavigationItem `yaml:"main"`
-	Filesystem     map[string]File
+	Root NavigationItem
 }
 
 type NavigationItem struct {
-	LocalPath string           `yaml:"local-path"`
-	Url       string           `yaml:"url"`
-	Label     string           `yaml:"label"`
-	Children  []NavigationItem `yaml:"children,omitempty"`
-	IsActive  bool             // helper field for templating
+	Url         string
+	Title       string
+	Children    []NavigationItem
+	IsActive    bool // helper field for templating
+	IsDirectory bool
 }
 
-func ReadNavigationYaml(path string) (Navigation, error) {
+func createNavigationItem(context *Context, directory Directory) (NavigationItem, error) {
+	item := NavigationItem{
+		Url:         directory.Url,
+		Title:       directory.Title,
+		Children:    make([]NavigationItem, 0),
+		IsDirectory: true,
+	}
+
+	// Create a NavigationItem for each file
+	for _, file := range directory.Files {
+		child := NavigationItem{
+			Url:         file.Url,
+			Title:       file.Title,
+			IsDirectory: false,
+		}
+		item.Children = append(item.Children, child)
+	}
+
+	// Create a NavigationItem for each subdirectory
+	for _, dir := range directory.Subdirectories {
+		child, err := createNavigationItem(context, dir)
+		if err != nil {
+			return NavigationItem{}, err
+		}
+		item.Children = append(item.Children, child)
+	}
+
+	return item, nil
+}
+
+func InitializeNavigation(context *Context) (Navigation, error) {
 	var navigation Navigation
-	navigation.FilePath = path
-	navigation.Filesystem = make(map[string]File)
 
-	// Read the file
-	data, err := os.ReadFile(path)
+	// Go through the Filesystem structure and build the navigation tree
+	item, err := createNavigationItem(context, context.Root)
 	if err != nil {
-		return Navigation{}, fmt.Errorf("failed to read %s: %w", path, err)
+		return Navigation{}, err
 	}
-
-	// Parse the YAML file
-	if err := yaml.Unmarshal(data, &navigation); err != nil {
-		return Navigation{}, fmt.Errorf("failed to parse %s: %w", path, err)
-	}
-
-	// We need at least one main navigation item
-	if len(navigation.NavigationTree) == 0 {
-		return Navigation{}, fmt.Errorf("no main navigation items found in %s", path)
-	}
-
-	// Enforce absolute paths for LocalPath and Url in the NavigationTree
-	for _, item := range navigation.NavigationTree {
-		if !filepath.IsAbs(item.LocalPath) {
-			return Navigation{}, fmt.Errorf("expected absolute path for %s", item.LocalPath)
-		}
-		if !filepath.IsAbs(item.Url) {
-			return Navigation{}, fmt.Errorf("expected absolute url for %s", item.Url)
-		}
-	}
-
+	navigation.Root = item
 	return navigation, nil
 }

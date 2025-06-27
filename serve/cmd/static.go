@@ -21,9 +21,9 @@ func Static(context *core.Context) {
 	// Filesystem has circular references which break the JSON serializer. Remove them,
 	// and remove other unsupported types
 	ctxcopy.Watcher = nil
-	for url, file := range ctxcopy.Navigation.Filesystem {
+	for url, file := range ctxcopy.Filesystem {
 		file.Directory = nil
-		ctxcopy.Navigation.Filesystem[url] = file
+		ctxcopy.Filesystem[url] = file
 	}
 
 	contextJson, err := json.MarshalIndent(ctxcopy, "", "  ")
@@ -38,7 +38,7 @@ func Static(context *core.Context) {
 	}
 
 	// For each route: create the file
-	for url := range ctxcopy.Navigation.Filesystem {
+	for url := range ctxcopy.Filesystem {
 		file, err := core.GetFileWithContent(url, &ctxcopy)
 		if err != nil {
 			log.Fatalf("Failed to retrieve file contents: %v", err)

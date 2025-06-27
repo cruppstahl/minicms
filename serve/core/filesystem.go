@@ -13,6 +13,7 @@ import (
 
 type File struct {
 	LocalPath     string
+	Url           string
 	Title         string   `yaml:"title"`
 	Author        string   `yaml:"author"`
 	Tags          []string `yaml:"tags"`
@@ -26,6 +27,7 @@ type File struct {
 
 type Directory struct {
 	LocalPath      string
+	Url            string
 	Title          string `yaml:"title"`
 	CssFile        string `yaml:"cssfile"`
 	Subdirectories map[string]Directory
@@ -38,7 +40,7 @@ func createFileStruct(filePath string, fileName string, directory *Directory, pl
 	// Create a File struct and populate its fields
 	file := File{
 		LocalPath:    filePath,
-		Title:        strings.TrimSuffix(fileName, ext),
+		Title:        strings.TrimSuffix(strings.TrimSuffix(fileName, ext), "."),
 		MimeType:     plugin.Mimetype(),
 		IgnoreLayout: plugin.IgnoreLayout(),
 		Directory:    directory,
@@ -144,32 +146,36 @@ func readDirectory(localPath string, context *Context) (Directory, error) {
 
 func addFilesystemEntry(context *Context, url string, file File) {
 	// Add the File to the Filesystem
-	_, exists := context.Navigation.Filesystem[url]
+	_, exists := context.Filesystem[url]
 	if exists {
 		log.Fatalf("Duplicate URL found in Filesystem: %s", url)
 	}
-	context.Navigation.Filesystem[url] = file
+	context.Filesystem[url] = file
 }
 
 func populateFilesystem(directory *Directory, url string, context *Context) {
 	// Create a lookup item for all files in the current directory
-	for _, file := range directory.Files {
-		// Create a File structure
+	for i, file := range directory.Files {
 		base := filepath.Base(file.LocalPath)
 		ext := strings.ToLower(filepath.Ext(base))
 		base = strings.TrimSuffix(base, ext)
-		addFilesystemEntry(context, filepath.Join(url, base), file)
 
 		// If this is the index file then use it as a default route for the directory
 		if base == "index" {
-			addFilesystemEntry(context, url, file)
+			file.Url = url
+		} else {
+			file.Url = filepath.Join(url, base)
 		}
+		addFilesystemEntry(context, file.Url, file)
+		directory.Files[i] = file // Update the file in the directory with the URL
 	}
 
 	// Recursively populate the lookup index for child directories
-	for _, subDir := range directory.Subdirectories {
-		base := filepath.Base(subDir.LocalPath)
-		populateFilesystem(&subDir, filepath.Join(url, base), context)
+	for i, dir := range directory.Subdirectories {
+		base := filepath.Base(dir.LocalPath)
+		dir.Url = filepath.Join(url, base)
+		populateFilesystem(&dir, dir.Url, context)
+		directory.Subdirectories[i] = dir
 	}
 }
 
@@ -178,13 +184,14 @@ func InitializeFilesystem(context *Context) error {
 	contentRoot := filepath.Join(context.Config.SiteDirectory, "content")
 
 	// Read the directory for this item
-	directory, err := readDirectory(contentRoot, context)
+	context.Root, err = readDirectory(contentRoot, context)
 	if err != nil {
 		return fmt.Errorf("failed to read %s directory: %w", contentRoot, err)
 	}
 
 	// Create structures for all Files in the Directory
-	populateFilesystem(&directory, "/", context)
+	context.Root.Url = "/"
+	populateFilesystem(&context.Root, context.Root.Url, context)
 
 	return nil
 }

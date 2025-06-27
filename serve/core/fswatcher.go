@@ -40,10 +40,10 @@ func InitializeFsWatcher(context *Context) error {
 					changedPath := strings.TrimPrefix(event.Name, context.Config.SiteDirectory)
 					// Force recreation of all html files if the layout has changed
 					if strings.HasPrefix(changedPath, "/layout") {
-						for url, file := range context.Navigation.Filesystem {
+						for url, file := range context.Filesystem {
 							if file.MimeType == "text/html" {
 								file.CachedContent = nil
-								context.Navigation.Filesystem[url] = file
+								context.Filesystem[url] = file
 							}
 						}
 						break
@@ -54,10 +54,10 @@ func InitializeFsWatcher(context *Context) error {
 					// corresponding html file (or whole directory)
 					if strings.HasSuffix(changedPath, "metadata.yaml") {
 						changedPath = strings.TrimSuffix(changedPath, "metadata.yaml")
-						for url, file := range context.Navigation.Filesystem {
+						for url, file := range context.Filesystem {
 							if strings.HasPrefix(url, changedPath) && file.MimeType == "text/html" {
 								file.CachedContent = nil
-								context.Navigation.Filesystem[url] = file
+								context.Filesystem[url] = file
 							}
 						}
 						break
@@ -68,11 +68,11 @@ func InitializeFsWatcher(context *Context) error {
 						// Remove a potential .html suffix
 						changedPath = strings.TrimSuffix(changedPath, ".html")
 
-						file, exists := context.Navigation.Filesystem[changedPath]
+						file, exists := context.Filesystem[changedPath]
 						if exists {
 							if file.MimeType == "text/html" {
 								file.CachedContent = nil
-								context.Navigation.Filesystem[changedPath] = file
+								context.Filesystem[changedPath] = file
 							}
 							return
 						}
@@ -80,10 +80,10 @@ func InitializeFsWatcher(context *Context) error {
 
 					// Otherwise assume that the event is a directory change, and update
 					// everything that is below this directory
-					for url, file := range context.Navigation.Filesystem {
+					for url, file := range context.Filesystem {
 						if strings.HasPrefix(url, changedPath) && file.MimeType == "text/html" {
 							file.CachedContent = nil
-							context.Navigation.Filesystem[url] = file
+							context.Filesystem[url] = file
 						}
 					}
 				}

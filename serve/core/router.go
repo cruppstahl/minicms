@@ -16,7 +16,7 @@ func InitializeRouter(context *Context) (*gin.Engine, error) {
 	})
 
 	// Go through the Filesystem structure and set up the routes
-	for url := range context.Navigation.Filesystem {
+	for url := range context.Filesystem {
 		router.GET(url, func(c *gin.Context) {
 			// Don't forget type assertion when getting the connection from context.
 			context, _ := c.MustGet("context").(*Context)

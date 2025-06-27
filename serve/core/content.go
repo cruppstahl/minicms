@@ -74,12 +74,13 @@ func buildTemplateVars(file *File, context *Context) map[string]interface{} {
 
 	// Go through all NavigationItems. If their URL matches the current file's URL,
 	// then set the "active" variable to true.
-	navTree := context.Navigation.NavigationTree
-	for i, item := range navTree {
-		item.IsActive = strings.HasSuffix(file.LocalPath, item.LocalPath)
-		navTree[i] = item
+	root := context.Navigation.Root
+	for i, item := range root.Children {
+		item.IsActive = strings.HasSuffix(file.LocalPath, item.Url)
+		root.Children[i] = item
 	}
-	vars["Navigation"] = navTree
+	vars["Navigation"] = root
+	fmt.Println("Navigation:", root)
 
 	return vars
 }
@@ -104,7 +105,7 @@ func applyTemplate(body string, file *File, vars *map[string]interface{}) (strin
 func GetFileWithContent(path string, context *Context) (*File, error) {
 	normalizedPath := normalizePath(path)
 
-	file, ok := context.Navigation.Filesystem[normalizedPath]
+	file, ok := context.Filesystem[normalizedPath]
 	if !ok {
 		return nil, fmt.Errorf("file not found: %s", normalizedPath)
 	}

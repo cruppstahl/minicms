@@ -1,56 +1,39 @@
 main:
   - local-path: "/docs/api"
     url: "/api"
-    label: API
   - local-path: "/getting-started"
     url: "/getting-started"
-    label: Getting Started
     children:
       - local-path: "/getting-started/introduction"
         url: "/getting-started/introduction"
-        label: Introduction
       - local-path: "/getting-started/quick-start"
         url: "/getting-started/quick-start"
-        label: Quick Start
       - local-path: "/getting-started/installation"
         url: "/getting-started/installation"
-        label: Installation
   - local-path: "/core-concepts"
     url: "/core-concepts"
-    label: Core Concepts
     children:
       - local-path: "/core-concepts/architecture"
         url: "/core-concepts/architecture.md"
-        label: Architecture
       - local-path: "/core-concepts/components"
         url: "/core-concepts/components"
-        label: Components
       - local-path: "/core-concepts/styling"
         url: "/core-concepts/styling"
-        label: Styling
   - local-path: "/advanced"
     url: "/advanced"
-    label: Advanced
     children:
       - local-path: "/advanced/customization"
         url: "/advanced/customization"
-        label: Customization
       - local-path: "/advanced/plugins"
         url: "/advanced/plugins"
-        label: Plugins
       - local-path: "/advanced/themes"
         url: "/advanced/themes"
-        label: Themes
   - local-path: "/reference"
     url: "/reference"
-    label: Reference
     children:
       - local-path: "/reference/api-reference"
         url: "/reference/api-reference"
-        label: API Reference
       - local-path: "/reference/migration-guide"
         url: "/reference/migration-guide"
-        label: Migration Guide
       - local-path: "/reference/changelog"
         url: "/reference/changelog"
-        label: Changelog

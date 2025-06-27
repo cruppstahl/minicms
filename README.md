@@ -119,12 +119,13 @@
             in markdown
         [x] Create sample content (about 10 pages)
 
-    [ ] Revisit the navigation.yaml file
-        [ ] Get rid of "Label" - use the .Title tag from the metadata
-            [ ] By default, use the file name - respect Lower/Uppercase!
-        [ ] Remove .Url - use the relative file path instead
-        [ ] Build navigation dynamically - it's in the file tree!
-            [ ] But add a metadata flag "hide from navigation"
+    [ ] Build navigation dynamically
+        [x] Use .PageTitle instead of "Label"
+            [x] By default, use the file name - respect Lower/Uppercase!
+        [x] Remove .Url - use the relative file path instead
+        [ ] How can we set the sort order in the navigation?
+        [ ] Add a metadata flag "hide from navigation" (for Directories
+            and Files!)
 
     [ ] Self-host the documentation of what we have built so far
         [ ] Create main (left) navigation dynamically w/ configuration

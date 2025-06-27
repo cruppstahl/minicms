@@ -7,11 +7,13 @@ import (
 )
 
 type Context struct {
-	Users      Users
-	Config     Config
-	Navigation Navigation
+	Users         Users
+	Config        Config
+	Navigation    Navigation
+	Filesystem    map[string]File
+	Root          Directory
 	PluginManager PluginManager
-	Watcher    *fsnotify.Watcher
+	Watcher       *fsnotify.Watcher
 }
 
 func InitializeContext(context *Context) error {
@@ -31,18 +33,13 @@ func InitializeContext(context *Context) error {
 		return err
 	}
 
-	// read navigation.yaml
-	navigationFilePath := fmt.Sprintf("%s/config/navigation.yaml", context.Config.SiteDirectory)
-	context.Navigation, err = ReadNavigationYaml(navigationFilePath)
-	if err != nil {
-		return err
-	}
-
 	// Initialize the PluginManager
 	context.PluginManager, err = CreatePluginManager()
 	if err != nil {
 		return err
 	}
+
+	context.Filesystem = make(map[string]File)
 
 	return nil
 }

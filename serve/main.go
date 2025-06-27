@@ -45,6 +45,12 @@ func main() {
 		log.Fatalf("Failed to initialize lookup index: %v", err)
 	}
 
+	// Build the Navigation structure
+	context.Navigation, err = core.InitializeNavigation(&context)
+	if err != nil {
+		log.Fatalf("Failed to initialize navigation: %v", err)
+	}
+
 	// If requested, dump the whole context and the file tree to a directory
 	// This is used for testing (the directory can then be compared to
 	// a "golden" set of files, and any deviation is a bug)

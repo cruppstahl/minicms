@@ -49,9 +49,9 @@
         <nav class="sidebar" id="sidebar">
           {{ range .Navigation }}
             <div class="sidebar-section">
-	      <div class="sidebar-title">{{ .Label}}</div>
+	      <div class="sidebar-title">{{.Label}}</div>
               {{ range .Children }}
-                <a href="{{ .Url }}" class="sidebar-item {{ if .IsActive }}active{{ end }}">{{ .Label }}</a>
+                <a href="{{ .Url }}" class="sidebar-item {{ if .IsActive }}active{{ end }}">{{.Label}}</a>
               {{ end }}
           {{ end }}
         </nav>

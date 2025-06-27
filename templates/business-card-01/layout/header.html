@@ -30,8 +30,8 @@
         <h1>{{.SiteTitle}}</h1>
       </div>
       <nav class="navigation">
-        {{ range .Navigation }}
-        <a href="{{ .Url }}" class="nav-link {{ if .IsActive }}active{{ end }}">{{ .Label }}</a>
+        {{ range .Navigation.Children }}
+        <a href="{{ .Url }}" class="nav-link {{ if .IsActive }}active{{ end }}">{{ .Title }}</a>
         {{ end }}
       </nav>
     </div>
