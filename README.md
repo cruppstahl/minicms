@@ -96,12 +96,13 @@
     [x] Add metadata option to ignore header/footer 
         [x] Add this to the tests
     [x] Introduce a plugin mechanism
-        [x] ContentTypePlugins depend on content type and file extension, and transform
-        a whole file
+        [x] ContentTypePlugins depend on content type and file extension,
+            and transform a whole file
         [x] Rewrite current logic as a new plugin
         [x] The plugins decide about the mimetype
-        [x] The plugins decide whether header/footer is included (false for text/html)
-        -> this is stored in the metadata, and evaluated in the router
+        [x] The plugins decide whether header/footer is included (false for
+            text/html)
+            -> this is stored in the metadata, and evaluated in the router
     [x] Raw text is used as is, without header/footer
         [x] This is a new plugin (plugins/contenttype/text.go)
         [x] Add this to the tests
@@ -119,13 +120,15 @@
             in markdown
         [x] Create sample content (about 10 pages)
 
-    [ ] Build navigation dynamically
+    [x] Build navigation dynamically
         [x] Use .PageTitle instead of "Label"
             [x] By default, use the file name - respect Lower/Uppercase!
         [x] Remove .Url - use the relative file path instead
-        [ ] How can we set the sort order in the navigation?
-        [ ] Add a metadata flag "hide from navigation" (for Directories
+        [x] Set the sort order in the navigation's metadata, for
+            directories and files
+        [x] Add a metadata flag "hide from navigation" (for Directories
             and Files!)
+        [x] Cover all of this with tests
 
     [ ] Self-host the documentation of what we have built so far
         [ ] Create main (left) navigation dynamically w/ configuration
@@ -133,6 +136,7 @@
             JS code goes through the main content div, extracts h1,h2,h3
         [ ] Support documentation for different versions, e.g. of an API,
             through the navigation (needs product discovery!)
+
     [ ] Add search functionality, with keywords and full text
         [ ] Integrate bleve (https://claude.ai/chat/ba078972-162e-4c60-87fd-e7956a15f488)
         [ ] Rebuild search index (async) if cache is invalidated
@@ -157,6 +161,17 @@
     [ ] Review everything - is it idiomatic golang code?
     [ ] Check the wordpress interface for plugins - did we miss anything?
 
+[ ] Revisit the cache invalidation
+    [ ] If a file is modified, also re-read the metadata
+    [ ] If a directory (or its metadata.yaml) is modified, invalidate it
+        completely
+    [ ] If header/footer is modified, invalidate everything
+    [ ] Invalidation means: re-build the new data structures (in the
+        background), then atomically swap it with the existing data
+    [ ] Cover this with tests
+    [ ] if a file or directory was added then add the route
+    [ ] if a file or directory was removed then drop the route
+
 [ ] Use case: personal blog
     [ ] Default index page shows all posts (configurable!)
         [ ] This is a new plugin type (SnippetPlugin?)
@@ -168,5 +183,3 @@
         added/removed
     [ ] Filter robots and spammers (see https://lambdacreate.com/posts/68)
 
-[ ] if a file or directory was added then add the route
-[ ] if a file or directory was removed then drop the route

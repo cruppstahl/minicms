@@ -21,6 +21,8 @@ func Static(context *core.Context) {
 	// Filesystem has circular references which break the JSON serializer. Remove them,
 	// and remove other unsupported types
 	ctxcopy.Watcher = nil
+	ctxcopy.PluginManager = core.PluginManager{}
+	ctxcopy.Root = core.Directory{}
 	for url, file := range ctxcopy.Filesystem {
 		file.Directory = nil
 		ctxcopy.Filesystem[url] = file

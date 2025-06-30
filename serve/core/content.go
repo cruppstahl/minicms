@@ -62,7 +62,6 @@ func buildTemplateVars(file *File, context *Context) map[string]interface{} {
 		"PageImagePath":    file.ImagePath,
 		"PageCssFile":      file.CssFile,
 		"PageMimeType":     file.MimeType,
-		"ActiveUrl":        "", // This will be set below
 	}
 
 	if file.Directory != nil { // Can be nil when "dump"ing everything to disk
@@ -76,11 +75,10 @@ func buildTemplateVars(file *File, context *Context) map[string]interface{} {
 	// then set the "active" variable to true.
 	root := context.Navigation.Root
 	for i, item := range root.Children {
-		item.IsActive = strings.HasSuffix(file.LocalPath, item.Url)
+		item.IsActive = file.Url == item.Url
 		root.Children[i] = item
 	}
 	vars["Navigation"] = root
-	fmt.Println("Navigation:", root)
 
 	return vars
 }

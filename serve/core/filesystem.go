@@ -18,6 +18,8 @@ type File struct {
 	Author        string   `yaml:"author"`
 	Tags          []string `yaml:"tags"`
 	ImagePath     string   `yaml:"image"`
+	NavPosition   int      `yaml:"navigation-position"`
+	NavHidden     bool     `yaml:"navigation-hidden"`
 	CssFile       string
 	MimeType      string
 	CachedContent []byte
@@ -30,6 +32,8 @@ type Directory struct {
 	Url            string
 	Title          string `yaml:"title"`
 	CssFile        string `yaml:"cssfile"`
+	NavPosition    int    `yaml:"navigation-position"`
+	NavHidden      bool   `yaml:"navigation-hidden"`
 	Subdirectories map[string]Directory
 	Files          map[string]File
 }
@@ -43,6 +47,7 @@ func createFileStruct(filePath string, fileName string, directory *Directory, pl
 		Title:        strings.TrimSuffix(strings.TrimSuffix(fileName, ext), "."),
 		MimeType:     plugin.Mimetype(),
 		IgnoreLayout: plugin.IgnoreLayout(),
+		NavPosition:  -1,
 		Directory:    directory,
 	}
 
@@ -72,18 +77,18 @@ func createFileStruct(filePath string, fileName string, directory *Directory, pl
 }
 
 func readDirectory(localPath string, context *Context) (Directory, error) {
-	var directory Directory
-	directory.LocalPath = localPath
+	directory := Directory{
+		LocalPath:   localPath,
+		Title:       filepath.Base(localPath),
+		NavPosition: -1,
+	}
 
 	// Construct the path to metadata.yaml
 	metadataPath := filepath.Join(localPath, "metadata.yaml")
 
 	// Read and parse metadata.yaml - this file is optional!
 	metadataFile, err := os.Open(metadataPath)
-	if err != nil {
-		// assume that the file does not exist, fill struct with default values
-		directory.Title = filepath.Base(localPath)
-	} else {
+	if err == nil {
 		defer metadataFile.Close()
 		decoder := yaml.NewDecoder(metadataFile)
 		if err := decoder.Decode(&directory); err != nil {

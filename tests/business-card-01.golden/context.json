@@ -25,80 +25,96 @@
     }
   },
   "Navigation": {
-    "FilePath": "templates/business-card-01/config/navigation.yaml",
-    "NavigationTree": [
-      {
-        "LocalPath": "/index.html",
-        "Url": "/",
-        "Label": "Home",
-        "Children": null,
-        "IsActive": false
-      },
-      {
-        "LocalPath": "/projects.html",
-        "Url": "/projects",
-        "Label": "Projects",
-        "Children": null,
-        "IsActive": false
-      },
-      {
-        "LocalPath": "/cv.html",
-        "Url": "/cv",
-        "Label": "CV",
-        "Children": null,
-        "IsActive": false
-      }
-    ],
-    "Filesystem": {
-      "/": {
-        "LocalPath": "templates/business-card-01/content/index.html",
-        "Title": "index.",
-        "Author": "",
-        "Tags": null,
-        "ImagePath": "",
-        "CssFile": "",
-        "MimeType": "text/html",
-        "CachedContent": null,
-        "IgnoreLayout": false,
-        "Directory": null
-      },
-      "/cv": {
-        "LocalPath": "templates/business-card-01/content/cv.html",
-        "Title": "cv.",
-        "Author": "",
-        "Tags": null,
-        "ImagePath": "",
-        "CssFile": "",
-        "MimeType": "text/html",
-        "CachedContent": null,
-        "IgnoreLayout": false,
-        "Directory": null
-      },
-      "/index": {
-        "LocalPath": "templates/business-card-01/content/index.html",
-        "Title": "index.",
-        "Author": "",
-        "Tags": null,
-        "ImagePath": "",
-        "CssFile": "",
-        "MimeType": "text/html",
-        "CachedContent": null,
-        "IgnoreLayout": false,
-        "Directory": null
-      },
-      "/projects": {
-        "LocalPath": "templates/business-card-01/content/projects.html",
-        "Title": "projects.",
-        "Author": "",
-        "Tags": null,
-        "ImagePath": "",
-        "CssFile": "",
-        "MimeType": "text/html",
-        "CachedContent": null,
-        "IgnoreLayout": false,
-        "Directory": null
-      }
+    "Root": {
+      "Url": "/",
+      "Title": "Home",
+      "Position": 0,
+      "Children": [
+        {
+          "Url": "/",
+          "Title": "Home",
+          "Position": 0,
+          "Children": null,
+          "IsActive": false,
+          "IsDirectory": false
+        },
+        {
+          "Url": "/projects",
+          "Title": "Projects",
+          "Position": 1,
+          "Children": null,
+          "IsActive": false,
+          "IsDirectory": false
+        },
+        {
+          "Url": "/cv",
+          "Title": "CV",
+          "Position": 10,
+          "Children": null,
+          "IsActive": false,
+          "IsDirectory": false
+        }
+      ],
+      "IsActive": false,
+      "IsDirectory": true
     }
+  },
+  "Filesystem": {
+    "/": {
+      "LocalPath": "templates/business-card-01/content/index.html",
+      "Url": "/",
+      "Title": "Home",
+      "Author": "",
+      "Tags": null,
+      "ImagePath": "",
+      "NavPosition": 0,
+      "NavHidden": false,
+      "CssFile": "",
+      "MimeType": "text/html",
+      "CachedContent": null,
+      "IgnoreLayout": false,
+      "Directory": null
+    },
+    "/cv": {
+      "LocalPath": "templates/business-card-01/content/cv.html",
+      "Url": "/cv",
+      "Title": "CV",
+      "Author": "",
+      "Tags": null,
+      "ImagePath": "",
+      "NavPosition": 10,
+      "NavHidden": false,
+      "CssFile": "",
+      "MimeType": "text/html",
+      "CachedContent": null,
+      "IgnoreLayout": false,
+      "Directory": null
+    },
+    "/projects": {
+      "LocalPath": "templates/business-card-01/content/projects.html",
+      "Url": "/projects",
+      "Title": "Projects",
+      "Author": "",
+      "Tags": null,
+      "ImagePath": "",
+      "NavPosition": -1,
+      "NavHidden": false,
+      "CssFile": "",
+      "MimeType": "text/html",
+      "CachedContent": null,
+      "IgnoreLayout": false,
+      "Directory": null
+    }
+  },
+  "Root": {
+    "LocalPath": "",
+    "Url": "",
+    "Title": "",
+    "CssFile": "",
+    "NavPosition": 0,
+    "NavHidden": false,
+    "Subdirectories": null,
+    "Files": null
   },
   "PluginManager": {},
   "Watcher": null
