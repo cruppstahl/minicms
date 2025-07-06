@@ -131,25 +131,83 @@
         [x] Cover all of this with tests
 
     [ ] Self-host the documentation of what we have built so far
+        [x] Create dummy content
+		Overview
+			What is miniCMS??	
+			Use cases
+		Quick Start
+			Download and build miniCMS
+			Run the service
+			Modify the template
+			Hosting (nginx, ...)
+		Content
+			Directory structure
+			Supported file types
+			Layouts
+			Templating
+			Formatting
+		Examples
+			List of templates
+		References
+			Command line options
+			Server configuration
+			Navigation
+			Directory metadata
+			File metadata
         [ ] Create main (left) navigation dynamically w/ configuration
         [ ] Create lower-level (right) navigation dynamically
             JS code goes through the main content div, extracts h1,h2,h3
-        [ ] Support documentation for different versions, e.g. of an API,
-            through the navigation (needs product discovery!)
+    	[ ] Show date of last (file) update in the footer of each page
+    		[ ] Use file date, but allow to overwrite it by metadata
+    	[ ] Specify a root index in the site configuration (as redirect)
+    		[ ] Add a test
 
     [ ] Add search functionality, with keywords and full text
         [ ] Integrate bleve (https://claude.ai/chat/ba078972-162e-4c60-87fd-e7956a15f488)
         [ ] Rebuild search index (async) if cache is invalidated
-        [ ] Implement Search as a plugin: only activate it if it is enabled
-    [ ] Show date of last (file) update in the footer of each page
+        [ ] Implement Search as a plugin: only activate it if it is enabled,
+		and for a specific directory
     [ ] Use the new documentation tool as a second test project
-    [ ] Specify a root index in the site configuration (implement as redirect)
-    [ ] Support custom 404 page (/content/404.\*), including metadata
-        [ ] Add one to crupp.de
+
     [ ] Verify that the navigation can link to completely different directories
         (e.g. blog and documentation are maintained by different teams, and
         therefore stored in different repositories)
         [ ] Create a test case for this
+
+    [ ] Support documentation for different versions, e.g. of an API,
+        through the navigation (needs product discovery!)
+    	[ ] Create a new ContentPlugin type which works on a full directory
+    	[ ] Specified in the metadata.yaml file of a directory, and can have
+		additional parameters
+		plugins:
+			- name: documentation
+				- parameters:
+					- name: key1
+					  value: value11
+					- name: key2
+					  value: value12
+    	[ ] This plugin can modify the list of URLs (i.e. routes) and their
+		corresponding files, metadata, and template args
+    	[ ] When the cache is invalidated, this plugin re-generates its content
+    	[ ] Read a documentation.yaml file with instructions about versioning
+    	[ ] Show additional information about endpoints, depending on the
+		selected version
+    		[ ] deprecated endpoints
+    		[ ] added endpoints
+    		[ ] modified endpoints (incl. migration information, changelog)
+
+[ ] Support custom 404 page (/content/404.\*), including metadata
+    [ ] Add one to crupp.de
+    [ ] Add this as a test
+
+Review plugin capacbilities of wordpress
+Review layout capacbilities of wordpress
+
+!!!
+!!! Review multithreading setup - the cache does not have any protection, but
+!!! Can be invalidated at any time
+!!! - Add r/w-mutex
+!!! - Rebuild cache in the background, then swap atomically?
 
 !!!
 !!! HEAD requests are not supported (curl -I https://reqbin.com/echo)
