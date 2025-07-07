@@ -132,28 +132,6 @@
 
     [ ] Self-host the documentation of what we have built so far
         [x] Create dummy content
-		Overview
-			What is miniCMS??	
-			Use cases
-		Quick Start
-			Download and build miniCMS
-			Run the service
-			Modify the template
-			Hosting (nginx, ...)
-		Content
-			Directory structure
-			Supported file types
-			Layouts
-			Templating
-			Formatting
-		Examples
-			List of templates
-		References
-			Command line options
-			Server configuration
-			Navigation
-			Directory metadata
-			File metadata
         [ ] Create main (left) navigation dynamically w/ configuration
         [ ] Create lower-level (right) navigation dynamically
             JS code goes through the main content div, extracts h1,h2,h3

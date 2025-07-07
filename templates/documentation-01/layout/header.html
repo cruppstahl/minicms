@@ -1,99 +1,97 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="shortcut icon" type="image/png" href="{{.BrandingFavicon}}"/>
-    <title>{{.SiteTitle}} - {{.PageTitle}}</title>
-    <meta
-      name="description"
-      content="{{.SiteDescription}}"
-    >
+  <link rel="shortcut icon" type="image/png" href="{{.BrandingFavicon}}"/>
+  <title>{{.SiteTitle}} - {{.PageTitle}}</title>
+  <meta
+    name="description"
+    content="{{.SiteDescription}}"
+  >
 
-    <!-- Pico.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/1.5.7/pico.min.css">
+  <!-- Pico.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/picocss/1.5.7/pico.min.css">
 
-    <!-- Custom template-->
-    <link rel="stylesheet" href="{{.BrandingCssFile}}">
+  <!-- Custom template-->
+  <link rel="stylesheet" href="{{.BrandingCssFile}}">
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-left">
-            <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
-	    <a href="#" class="logo">{{.SiteTitle}}</a>
-            <select class="version-selector" onchange="handleVersionChange(this.value)">
-                <option value="v2.1">v2.1</option>
-                <option value="v2.0">v2.0</option>
-                <option value="v1.9">v1.9</option>
-            </select>
-        </div>
-        
-        <div class="search-box">
-            <input type="search" placeholder="Search docs..." />
-        </div>
-        
-        <div class="header-right">
-            <a href="#" class="header-link">FAQ</a>
-            <a href="#" class="header-link">GitHub</a>
-            <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
-        </div>
-    </header>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+      <a href="#" class="logo">{{.SiteTitle}}</a>
+      <select class="version-selector" onchange="handleVersionChange(this.value)">
+        <option value="v2.1">v2.1</option>
+        <option value="v2.0">v2.0</option>
+        <option value="v1.9">v1.9</option>
+      </select>
+    </div>
+    
+    <div class="search-box">
+      <input type="search" placeholder="Search docs..." />
+    </div>
+    
+    <div class="header-right">
+      <a href="#" class="header-link">FAQ</a>
+      <a href="#" class="header-link">GitHub</a>
+      <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    </div>
+  </header>
 
-    <!-- Layout -->
-    <div class="layout">
+  <!-- Layout -->
+  <div class="layout">
 
-        <!-- Left Sidebar -->
-        <nav class="sidebar" id="sidebar">
-          {{ range .Navigation }}
-            <div class="sidebar-section">
-	      <div class="sidebar-title">{{.Label}}</div>
-              {{ range .Children }}
-                <a href="{{ .Url }}" class="sidebar-item {{ if .IsActive }}active{{ end }}">{{.Label}}</a>
-              {{ end }}
-          {{ end }}
-        </nav>
+    <!-- Left Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      {{ range .Navigation.Children }}
+      <div class="sidebar-section">
+        <div class="sidebar-title">{{.Title}}</div>
+        {{ range .Children }}
+        <a href="{{ .Url }}" class="sidebar-item {{ if .IsActive }}active{{ end }}">{{.Title}}</a>
+        {{ end }}
+      </div>
+      {{ end }}
+    </nav>
 
-
-
-        <!-- Left Sidebar
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-section">
-                <div class="sidebar-title">Getting Started</div>
-                <a href="#" class="sidebar-item active" onclick="loadContent('introduction')">Introduction</a>
-                <a href="#" class="sidebar-item" onclick="loadContent('installation')">Installation</a>
-                <a href="#" class="sidebar-item" onclick="loadContent('quickstart')">Quick Start</a>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Core Concepts</div>
-                <a href="#" class="sidebar-item" onclick="loadContent('architecture')">Architecture</a>
-                <a href="#" class="sidebar-item" onclick="loadContent('components')">Components</a>
-                <a href="#" class="sidebar-item sub-item" onclick="loadContent('buttons')">Buttons</a>
-                <a href="#" class="sidebar-item sub-item" onclick="loadContent('forms')">Forms</a>
-                <a href="#" class="sidebar-item sub-item" onclick="loadContent('modals')">Modals</a>
-                <a href="#" class="sidebar-item" onclick="loadContent('styling')">Styling</a>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Advanced</div>
-                <a href="#" class="sidebar-item" onclick="loadContent('customization')">Customization</a>
-                <a href="#" class="sidebar-item" onclick="loadContent('themes')">Themes</a>
-                <a href="#" class="sidebar-item" onclick="loadContent('plugins')">Plugins</a>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="sidebar-title">Reference</div>
-                <a href="#" class="sidebar-item" onclick="loadContent('api')">API Reference</a>
-                <a href="#" class="sidebar-item" onclick="loadContent('changelog')">Changelog</a>
-                <a href="#" class="sidebar-item" onclick="loadContent('migration')">Migration Guide</a>
-            </div>
-        </nav>
+    <!-- Left Sidebar
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Getting Started</div>
+        <a href="#" class="sidebar-item active" onclick="loadContent('introduction')">Introduction</a>
+        <a href="#" class="sidebar-item" onclick="loadContent('installation')">Installation</a>
+        <a href="#" class="sidebar-item" onclick="loadContent('quickstart')">Quick Start</a>
+      </div>
+      
+      <div class="sidebar-section">
+        <div class="sidebar-title">Core Concepts</div>
+        <a href="#" class="sidebar-item" onclick="loadContent('architecture')">Architecture</a>
+        <a href="#" class="sidebar-item" onclick="loadContent('components')">Components</a>
+        <a href="#" class="sidebar-item sub-item" onclick="loadContent('buttons')">Buttons</a>
+        <a href="#" class="sidebar-item sub-item" onclick="loadContent('forms')">Forms</a>
+        <a href="#" class="sidebar-item sub-item" onclick="loadContent('modals')">Modals</a>
+        <a href="#" class="sidebar-item" onclick="loadContent('styling')">Styling</a>
+      </div>
+      
+      <div class="sidebar-section">
+        <div class="sidebar-title">Advanced</div>
+        <a href="#" class="sidebar-item" onclick="loadContent('customization')">Customization</a>
+        <a href="#" class="sidebar-item" onclick="loadContent('themes')">Themes</a>
+        <a href="#" class="sidebar-item" onclick="loadContent('plugins')">Plugins</a>
+      </div>
+      
+      <div class="sidebar-section">
+        <div class="sidebar-title">Reference</div>
+        <a href="#" class="sidebar-item" onclick="loadContent('api')">API Reference</a>
+        <a href="#" class="sidebar-item" onclick="loadContent('changelog')">Changelog</a>
+        <a href="#" class="sidebar-item" onclick="loadContent('migration')">Migration Guide</a>
+      </div>
+    </nav>
  -->
 
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="content" id="content">
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="content" id="content">
