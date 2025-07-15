@@ -138,9 +138,10 @@
             [x] adjust the templates, fix 'make test'
         [x] Create lower-level (right) navigation dynamically:
             JS code goes through the main content div, extracts h1,h2,h3
-    	[ ] Show date of last (file) update in the footer of each page
-    		[ ] Use file date, but allow to overwrite it by metadata
-    	[ ] Specify a root index in the site configuration (as redirect)
+    	[x] Show date of last (file) update in the footer of each page
+    		[x] Use file date, but allow to overwrite it by metadata
+    	[ ] Specify a default index for any directory (i.e. as an index route)
+            and implement it as a redirect
     		[ ] Add a test
 
     [ ] Add search functionality, with keywords and full text
@@ -172,6 +173,9 @@
     		[ ] added endpoints
     		[ ] modified endpoints (incl. migration information, changelog)
 
+!!!
+!!! Navigation does not show the "active" URL
+
 [ ] Support custom 404 page (/content/404.\*), including metadata
     [ ] Add one to crupp.de
     [ ] Add this as a test
@@ -188,12 +192,6 @@
 !!! - Add r/w-mutex
 !!! - Rebuild cache in the background, then swap atomically?
 
-!!!
-!!! HEAD requests are not supported (curl -I https://reqbin.com/echo)
-
-!!!
-!!! http://localhost:8080 returns 404 when running templates/current 
-
 [ ] Do a major round of refactoring
     [ ] Review everything - is it idiomatic golang code?
     [ ] Check the wordpress interface for plugins - did we miss anything?
@@ -208,15 +206,3 @@
     [ ] Cover this with tests
     [ ] if a file or directory was added then add the route
     [ ] if a file or directory was removed then drop the route
-
-[ ] Use case: personal blog
-    [ ] Default index page shows all posts (configurable!)
-        [ ] This is a new plugin type (SnippetPlugin?)
-    [ ] Site configuration specifies pagination etc
-    [ ] Add RSS/Atom functionality
-        [ ] This is a new plugin (plugins/contenttype/rss.go)
-        [ ] This is a new plugin (plugins/contenttype/atom.go)
-    [ ] Recreate auto-generated blog file if a post has been changed or
-        added/removed
-    [ ] Filter robots and spammers (see https://lambdacreate.com/posts/68)
-

@@ -6,25 +6,27 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/adrg/frontmatter"
 	"github.com/goccy/go-yaml"
 )
 
 type File struct {
-	LocalPath     string
-	Url           string
-	Title         string   `yaml:"title"`
-	Author        string   `yaml:"author"`
-	Tags          []string `yaml:"tags"`
-	ImagePath     string   `yaml:"image"`
-	NavPosition   int      `yaml:"navigation-position"`
-	NavHidden     bool     `yaml:"navigation-hidden"`
-	CssFile       string
-	MimeType      string
-	CachedContent []byte
-	IgnoreLayout  bool       `yaml:"ignore-layout"`
-	Directory     *Directory // The directory this file belongs to
+	LocalPath        string
+	Url              string
+	Title            string    `yaml:"title"`
+	Author           string    `yaml:"author"`
+	Tags             []string  `yaml:"tags"`
+	ImagePath        string    `yaml:"image"`
+	NavPosition      int       `yaml:"navigation-position"`
+	NavHidden        bool      `yaml:"navigation-hidden"`
+	DateOfLastUpdate time.Time `yaml:"date-of-last-update"`
+	CssFile          string
+	MimeType         string
+	CachedContent    []byte
+	IgnoreLayout     bool       `yaml:"ignore-layout"`
+	Directory        *Directory // The directory this file belongs to
 }
 
 type Directory struct {
@@ -73,6 +75,18 @@ func createFileStruct(filePath string, fileName string, directory *Directory, pl
 
 	// Simply parse the frontmatter from the file content, and ignore any errors
 	frontmatter.Parse(strings.NewReader(string(body)), &file)
+
+	// Set the date of the last update if not set
+	if file.DateOfLastUpdate.IsZero() {
+		// get the file's modification time
+		info, err := os.Stat(file.LocalPath)
+		if err != nil {
+			log.Printf("failed to get file info for %s: %s", file.LocalPath, err)
+		} else {
+			file.DateOfLastUpdate = info.ModTime()
+		}
+	}
+
 	return file, nil
 }
 

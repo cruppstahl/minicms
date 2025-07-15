@@ -62,6 +62,7 @@ func buildTemplateVars(file *File, context *Context) map[string]interface{} {
 		"PageImagePath":    file.ImagePath,
 		"PageCssFile":      file.CssFile,
 		"PageMimeType":     file.MimeType,
+		"DateOfLastUpdate": file.DateOfLastUpdate,
 	}
 
 	if file.Directory != nil { // Can be nil when "dump"ing everything to disk
