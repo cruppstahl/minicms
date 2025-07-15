@@ -136,7 +136,7 @@
             [x] nope, too complex and has drawbacks. undo!
         [x] If a navigation.yaml exists, then parse the yaml file
             [x] adjust the templates, fix 'make test'
-        [ ] Create lower-level (right) navigation dynamically:
+        [x] Create lower-level (right) navigation dynamically:
             JS code goes through the main content div, extracts h1,h2,h3
     	[ ] Show date of last (file) update in the footer of each page
     		[ ] Use file date, but allow to overwrite it by metadata

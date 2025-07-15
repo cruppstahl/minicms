@@ -4,11 +4,6 @@
     <!-- Right TOC -->
     <aside class="toc">
       <div class="toc-title">On this page</div>
-      <a href="#what-is-techdocs" class="toc-item">What is TechDocs?</a>
-      <a href="#key-features" class="toc-item">Key Features</a>
-      <a href="#responsive-design" class="toc-item level-2">Responsive Design</a>
-      <a href="#syntax-highlighting" class="toc-item level-2">Syntax Highlighting</a>
-      <a href="#next-steps" class="toc-item">Next Steps</a>
     </aside>
   </div> <!-- layout -->
 
@@ -27,56 +22,6 @@
       sidebar.classList.toggle('open');
     }
 
-    // Version change handler
-    function handleVersionChange(version) {
-      console.log('Switching to version:', version);
-      // Here you would typically reload content for the selected version
-    }
-
-    // Content loading simulation
-    function loadContent(page) {
-      // Remove active class from all sidebar items
-      document.querySelectorAll('.sidebar-item').forEach(item => {
-        item.classList.remove('active');
-      });
-      
-      // Add active class to clicked item
-      event.target.classList.add('active');
-      
-      // Simulate content loading based on page
-      const content = document.getElementById('content');
-      const contentMap = {
-        'introduction': {
-          title: 'Getting Started with TechDocs',
-          body: `<p>Welcome to TechDocs, a modern documentation framework...</p>
-               <h2 id="what-is-techdocs">What is TechDocs?</h2>
-               <p>TechDocs provides a comprehensive solution for documentation...</p>`
-        },
-        'installation': {
-          title: 'Installation Guide',
-          body: `<p>Installing TechDocs is quick and easy. Follow these steps:</p>
-               <h2 id="prerequisites">Prerequisites</h2>
-               <p>Before installing, make sure you have:</p>
-               <ul><li>Node.js 14+ installed</li><li>A package manager (npm or yarn)</li></ul>
-               <h2 id="install-steps">Installation Steps</h2>
-               <pre><code>npm install techdocs</code></pre>`
-        },
-        'quickstart': {
-          title: 'Quick Start Tutorial',
-          body: `<p>Get up and running with TechDocs in under 5 minutes.</p>
-               <h2 id="create-project">Create Your First Project</h2>
-               <p>Run the following command to create a new documentation project:</p>
-               <pre><code>npx create-techdocs my-docs</code></pre>`
-        }
-      };
-      
-      const pageContent = contentMap[page] || contentMap['introduction'];
-      content.innerHTML = `<h1>${pageContent.title}</h1>${pageContent.body}`;
-      
-      // Update TOC based on content
-      updateTOC();
-    }
-
     // Update table of contents
     function updateTOC() {
       const content = document.getElementById('content');
@@ -90,16 +35,19 @@
       // Add new TOC items
       headings.forEach(heading => {
         const link = document.createElement('a');
-        link.href = `#${heading.id}`;
+        link.href = heading.baseURI
         link.className = `toc-item ${heading.tagName === 'H3' ? 'level-2' : ''}`;
         link.textContent = heading.textContent;
         toc.appendChild(link);
       });
     }
 
+    updateTOC();
+
     // Initialize TOC highlighting on scroll
+    // TODO this does not yet work
     window.addEventListener('scroll', () => {
-      const headings = document.querySelectorAll('h2, h3');
+      const headings = document.querySelectorAll('h1, h2, h3');
       const tocItems = document.querySelectorAll('.toc-item');
       
       let current = '';
