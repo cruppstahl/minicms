@@ -132,8 +132,11 @@
 
     [ ] Self-host the documentation of what we have built so far
         [x] Create dummy content
-        [ ] Create main (left) navigation dynamically w/ configuration
-        [ ] Create lower-level (right) navigation dynamically
+        [x] Create main (left) navigation dynamically w/ configuration
+            [x] nope, too complex and has drawbacks. undo!
+        [x] If a navigation.yaml exists, then parse the yaml file
+            [x] adjust the templates, fix 'make test'
+        [ ] Create lower-level (right) navigation dynamically:
             JS code goes through the main content div, extracts h1,h2,h3
     	[ ] Show date of last (file) update in the footer of each page
     		[ ] Use file date, but allow to overwrite it by metadata
@@ -146,11 +149,6 @@
         [ ] Implement Search as a plugin: only activate it if it is enabled,
 		and for a specific directory
     [ ] Use the new documentation tool as a second test project
-
-    [ ] Verify that the navigation can link to completely different directories
-        (e.g. blog and documentation are maintained by different teams, and
-        therefore stored in different repositories)
-        [ ] Create a test case for this
 
     [ ] Support documentation for different versions, e.g. of an API,
         through the navigation (needs product discovery!)
@@ -178,8 +176,11 @@
     [ ] Add one to crupp.de
     [ ] Add this as a test
 
-Review plugin capacbilities of wordpress
-Review layout capacbilities of wordpress
+[ ] Verify that the navigation can link to completely different directories
+    (e.g. blog and documentation are maintained by different teams, and
+    therefore stored in different repositories)
+    -> is this a good idea? This opens the door to all kind of security issues
+    -> better enforce that all paths are part of the /content root?
 
 !!!
 !!! Review multithreading setup - the cache does not have any protection, but

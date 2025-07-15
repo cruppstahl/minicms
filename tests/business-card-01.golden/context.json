@@ -25,39 +25,30 @@
     }
   },
   "Navigation": {
-    "Root": {
-      "Url": "/",
-      "Title": "Home",
-      "Position": 0,
-      "Children": [
-        {
-          "Url": "/",
-          "Title": "Home",
-          "Position": 0,
-          "Children": null,
-          "IsActive": false,
-          "IsDirectory": false
-        },
-        {
-          "Url": "/projects",
-          "Title": "Projects",
-          "Position": 1,
-          "Children": null,
-          "IsActive": false,
-          "IsDirectory": false
-        },
-        {
-          "Url": "/cv",
-          "Title": "CV",
-          "Position": 10,
-          "Children": null,
-          "IsActive": false,
-          "IsDirectory": false
-        }
-      ],
-      "IsActive": false,
-      "IsDirectory": true
-    }
+    "FilePath": "templates/business-card-01/config/navigation.yaml",
+    "Children": [
+      {
+        "Url": "/",
+        "Title": "Home",
+        "Children": null,
+        "IsActive": false,
+        "IsDirectory": false
+      },
+      {
+        "Url": "/projects",
+        "Title": "Projects",
+        "Children": null,
+        "IsActive": false,
+        "IsDirectory": false
+      },
+      {
+        "Url": "/cv",
+        "Title": "CV",
+        "Children": null,
+        "IsActive": false,
+        "IsDirectory": false
+      }
+    ]
   },
   "Filesystem": {
     "/": {

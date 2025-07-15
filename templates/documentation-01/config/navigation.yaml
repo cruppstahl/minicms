@@ -1,39 +1,44 @@
 main:
-  - local-path: "/docs/api"
-    url: "/api"
-  - local-path: "/getting-started"
-    url: "/getting-started"
+  - url: "/docs/api"
+    title: API
     children:
-      - local-path: "/getting-started/introduction"
-        url: "/getting-started/introduction"
-      - local-path: "/getting-started/quick-start"
-        url: "/getting-started/quick-start"
-      - local-path: "/getting-started/installation"
-        url: "/getting-started/installation"
-  - local-path: "/core-concepts"
-    url: "/core-concepts"
+      - url: "/docs/api/authentication"
+        title: Authentication
+      - url: "/docs/api/endpoints"
+        title: Endpoints
+  - url: "/docs/getting-started"
+    title: Getting Started
     children:
-      - local-path: "/core-concepts/architecture"
-        url: "/core-concepts/architecture.md"
-      - local-path: "/core-concepts/components"
-        url: "/core-concepts/components"
-      - local-path: "/core-concepts/styling"
-        url: "/core-concepts/styling"
-  - local-path: "/advanced"
-    url: "/advanced"
+      - url: "/docs/getting-started/introduction"
+        title: Introduction
+      - url: "/docs/getting-started/quickstart"
+        title: Quick Start
+      - url: "/docs/getting-started/installation"
+        title: Installation
+  - url: "/docs/core-concepts"
+    title: Core Concepts
     children:
-      - local-path: "/advanced/customization"
-        url: "/advanced/customization"
-      - local-path: "/advanced/plugins"
-        url: "/advanced/plugins"
-      - local-path: "/advanced/themes"
-        url: "/advanced/themes"
-  - local-path: "/reference"
-    url: "/reference"
+      - url: "/docs/core-concepts/architecture"
+        title: Architecture
+      - url: "/docs/core-concepts/components"
+        title: Components
+      - url: "/docs/core-concepts/styling"
+        title: Styling
+  - url: "/docs/advanced"
+    title: Advanced
     children:
-      - local-path: "/reference/api-reference"
-        url: "/reference/api-reference"
-      - local-path: "/reference/migration-guide"
-        url: "/reference/migration-guide"
-      - local-path: "/reference/changelog"
-        url: "/reference/changelog"
+      - url: "/docs/advanced/customization"
+        title: Customization
+      - url: "/docs/advanced/plugins"
+        title: Plugins
+      - url: "/docs/advanced/themes"
+        title: Themes
+  - url: "/docs/reference"
+    title: Reference
+    children:
+      - url: "/docs/reference/api-reference"
+        title: API Reference
+      - url: "/docs/reference/migration-guide"
+        title: Migration Guide
+      - url: "/docs/reference/changelog"
+        title: Changelog

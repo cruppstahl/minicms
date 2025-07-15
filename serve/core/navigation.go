@@ -1,111 +1,62 @@
 package core
 
 import (
-	"sort"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Navigation struct {
-	Root NavigationItem
+	FilePath string
+	Children []NavigationItem `yaml:"main"`
 }
 
 type NavigationItem struct {
-	Url         string
-	Title       string
-	Position    int
-	Children    []NavigationItem
-	IsActive    bool // helper field for templating
+	Url         string           `yaml:"url"`
+	Title       string           `yaml:"title"`
+	Children    []NavigationItem `yaml:"children,omitempty"`
+	IsActive    bool             // helper field for templating
 	IsDirectory bool
 }
 
-func createNavigationItem(context *Context, directory *Directory) (NavigationItem, error) {
-	item := NavigationItem{
-		Url:         directory.Url,
-		Title:       directory.Title,
-		Children:    make([]NavigationItem, 0),
-		IsDirectory: true,
+func readNavigationYaml(path string) (Navigation, error) {
+	var navigation Navigation
+	navigation.FilePath = path
+
+	// Read the file
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Navigation{}, fmt.Errorf("failed to read %s: %w", path, err)
 	}
 
-	usedPositions := make(map[int]bool)
-
-	// Create a NavigationItem for each file
-	for _, file := range directory.Files {
-		if file.NavHidden {
-			continue
-		}
-
-		child := NavigationItem{
-			Url:         file.Url,
-			Title:       file.Title,
-			IsDirectory: false,
-			Position:    file.NavPosition,
-		}
-
-		// remember file.NavPosition to make sure that it is not used again
-		if file.NavPosition >= 0 {
-			usedPositions[file.NavPosition] = true
-		}
-
-		item.Children = append(item.Children, child)
+	// Parse the YAML file
+	if err := yaml.Unmarshal(data, &navigation); err != nil {
+		return Navigation{}, fmt.Errorf("failed to parse %s: %w", path, err)
 	}
 
-	// Create a NavigationItem for each subdirectory
-	for _, dir := range directory.Subdirectories {
-		if dir.NavHidden {
-			continue
-		}
-
-		child, err := createNavigationItem(context, &dir)
-		if err != nil {
-			return NavigationItem{}, err
-		}
-		child.Position = dir.NavPosition
-
-		// remember dir.NavPosition to make sure that it is not used again
-		if dir.NavPosition >= 0 {
-			usedPositions[dir.NavPosition] = true
-		}
-
-		item.Children = append(item.Children, child)
+	// We need at least one main navigation item
+	if len(navigation.Children) == 0 {
+		return Navigation{}, fmt.Errorf("no main navigation items found in %s", path)
 	}
 
-	// Now assign a unique position to those items who do not yet have one
-	pos := 0
-	for i, child := range item.Children {
-		// If this child already has a position, we can skip it
-		if child.Position >= 0 {
-			continue
+	// Enforce absolute paths
+	for _, item := range navigation.Children {
+		if !filepath.IsAbs(item.Url) {
+			return Navigation{}, fmt.Errorf("expected absolute url for %s", item.Url)
 		}
-
-		// otherwise increment pos until we find a position that is not used
-		for ; ; pos++ {
-			used, ok := usedPositions[pos]
-			if !ok || !used {
-				// found a position that is not used
-				break
-			}
-		}
-
-		child.Position = pos
-		item.Children[i] = child
-		pos++
 	}
 
-	// sort all Children based on their position
-	sort.Slice(item.Children, func(i, j int) bool {
-		return item.Children[i].Position < item.Children[j].Position
-	})
-
-	return item, nil
+	return navigation, nil
 }
 
 func InitializeNavigation(context *Context) (Navigation, error) {
-	var navigation Navigation
-
-	// Go through the Filesystem structure and build the navigation tree
-	item, err := createNavigationItem(context, &context.Root)
+	// Read the navigation.yaml file
+	path := fmt.Sprintf("%s/config/navigation.yaml", context.Config.SiteDirectory)
+	navigation, err := readNavigationYaml(path)
 	if err != nil {
-		return Navigation{}, err
+		return Navigation{}, fmt.Errorf("failed to read navigation.yaml: %w", err)
 	}
-	navigation.Root = item
 	return navigation, nil
 }

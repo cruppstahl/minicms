@@ -73,12 +73,12 @@ func buildTemplateVars(file *File, context *Context) map[string]interface{} {
 
 	// Go through all NavigationItems. If their URL matches the current file's URL,
 	// then set the "active" variable to true.
-	root := context.Navigation.Root
-	for i, item := range root.Children {
+	nav := context.Navigation
+	for i, item := range nav.Children {
 		item.IsActive = file.Url == item.Url
-		root.Children[i] = item
+		nav.Children[i] = item
 	}
-	vars["Navigation"] = root
+	vars["Navigation"] = nav
 
 	return vars
 }
