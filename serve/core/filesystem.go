@@ -36,6 +36,7 @@ type Directory struct {
 	CssFile        string `yaml:"cssfile"`
 	NavPosition    int    `yaml:"navigation-position"`
 	NavHidden      bool   `yaml:"navigation-hidden"`
+	Index          string `yaml:"index"` // The index file for this directory
 	Subdirectories map[string]Directory
 	Files          map[string]File
 }
@@ -90,7 +91,7 @@ func createFileStruct(filePath string, fileName string, directory *Directory, pl
 	return file, nil
 }
 
-func readDirectory(localPath string, context *Context) (Directory, error) {
+func createDirectoryStruct(localPath string, context *Context) (Directory, error) {
 	directory := Directory{
 		LocalPath:   localPath,
 		Title:       filepath.Base(localPath),
@@ -131,7 +132,7 @@ func readDirectory(localPath string, context *Context) (Directory, error) {
 			subDirPath := filepath.Join(localPath, entry.Name())
 
 			// Recursively read the subdirectory
-			subDir, err := readDirectory(subDirPath, context)
+			subDir, err := createDirectoryStruct(subDirPath, context)
 			if err != nil {
 				log.Printf("Failed to read subdirectory %s: %v", subDirPath, err)
 				continue
@@ -163,18 +164,9 @@ func readDirectory(localPath string, context *Context) (Directory, error) {
 	return directory, nil
 }
 
-func addFilesystemEntry(context *Context, url string, file File) {
-	// Add the File to the Filesystem
-	_, exists := context.Filesystem[url]
-	if exists {
-		log.Fatalf("Duplicate URL found in Filesystem: %s", url)
-	}
-	context.Filesystem[url] = file
-}
-
 func populateFilesystem(directory *Directory, url string, context *Context) {
 	// Create a lookup item for all files in the current directory
-	for i, file := range directory.Files {
+	for _, file := range directory.Files {
 		base := filepath.Base(file.LocalPath)
 		ext := strings.ToLower(filepath.Ext(base))
 		base = strings.TrimSuffix(base, ext)
@@ -182,11 +174,15 @@ func populateFilesystem(directory *Directory, url string, context *Context) {
 		// If this is the index file then use it as a default route for the directory
 		if base == "index" {
 			file.Url = url
+			context.Filesystem[url] = file // (e.g. "/doc")
+			// Create another alias with a trailing slash ("/doc/")
+			context.Filesystem[url+"/"] = file
+			// Create another alias for the index ("/doc/index")
+			context.Filesystem[url+"/index"] = file
 		} else {
 			file.Url = filepath.Join(url, base)
+			context.Filesystem[file.Url] = file
 		}
-		addFilesystemEntry(context, file.Url, file)
-		directory.Files[i] = file // Update the file in the directory with the URL
 	}
 
 	// Recursively populate the lookup index for child directories
@@ -203,7 +199,7 @@ func InitializeFilesystem(context *Context) error {
 	contentRoot := filepath.Join(context.Config.SiteDirectory, "content")
 
 	// Read the directory for this item
-	context.Root, err = readDirectory(contentRoot, context)
+	context.Root, err = createDirectoryStruct(contentRoot, context)
 	if err != nil {
 		return fmt.Errorf("failed to read %s directory: %w", contentRoot, err)
 	}

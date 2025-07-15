@@ -130,7 +130,7 @@
             and Files!)
         [x] Cover all of this with tests
 
-    [ ] Self-host the documentation of what we have built so far
+    [ ] Create a basic documentation template
         [x] Create dummy content
         [x] Create main (left) navigation dynamically w/ configuration
             [x] nope, too complex and has drawbacks. undo!
@@ -142,49 +142,31 @@
     		[x] Use file date, but allow to overwrite it by metadata
     	[ ] Specify a default index for any directory (i.e. as an index route)
             and implement it as a redirect
-    		[ ] Add a test
+    		[x] if an index file exist: use it for the route (/docs)
+    		[x] if an index file exist: use it for the route with slash (/docs/)
+    		[x] if an index file exist: use it as its own route (/docs/index)
+    		[ ] then do the same with a redirection if Index is specified
+                in the metadata
 
     [ ] Add search functionality, with keywords and full text
         [ ] Integrate bleve (https://claude.ai/chat/ba078972-162e-4c60-87fd-e7956a15f488)
         [ ] Rebuild search index (async) if cache is invalidated
         [ ] Implement Search as a plugin: only activate it if it is enabled,
 		and for a specific directory
-    [ ] Use the new documentation tool as a second test project
-
-    [ ] Support documentation for different versions, e.g. of an API,
-        through the navigation (needs product discovery!)
-    	[ ] Create a new ContentPlugin type which works on a full directory
-    	[ ] Specified in the metadata.yaml file of a directory, and can have
-		additional parameters
-		plugins:
-			- name: documentation
-				- parameters:
-					- name: key1
-					  value: value11
-					- name: key2
-					  value: value12
-    	[ ] This plugin can modify the list of URLs (i.e. routes) and their
-		corresponding files, metadata, and template args
-    	[ ] When the cache is invalidated, this plugin re-generates its content
-    	[ ] Read a documentation.yaml file with instructions about versioning
-    	[ ] Show additional information about endpoints, depending on the
-		selected version
-    		[ ] deprecated endpoints
-    		[ ] added endpoints
-    		[ ] modified endpoints (incl. migration information, changelog)
 
 !!!
 !!! Navigation does not show the "active" URL
 
-[ ] Support custom 404 page (/content/404.\*), including metadata
-    [ ] Add one to crupp.de
-    [ ] Add this as a test
+    [ ] Support custom 404 page (/content/404.\*), including metadata
+        [ ] Add one to crupp.de
+        [ ] Add this as a test
 
-[ ] Verify that the navigation can link to completely different directories
-    (e.g. blog and documentation are maintained by different teams, and
-    therefore stored in different repositories)
-    -> is this a good idea? This opens the door to all kind of security issues
-    -> better enforce that all paths are part of the /content root?
+    [ ] Verify that the navigation can link to completely different directories
+        (e.g. blog and documentation are maintained by different teams, and
+        therefore stored in different repositories)
+        -> is this a good idea? This opens the door to all kind of security
+            issues
+        -> better enforce that all paths are part of the /content root?
 
 !!!
 !!! Review multithreading setup - the cache does not have any protection, but
@@ -192,17 +174,20 @@
 !!! - Add r/w-mutex
 !!! - Rebuild cache in the background, then swap atomically?
 
-[ ] Do a major round of refactoring
-    [ ] Review everything - is it idiomatic golang code?
-    [ ] Check the wordpress interface for plugins - did we miss anything?
+    [ ] Do a major round of refactoring
+        [ ] Review everything - is it idiomatic golang code?
+        [ ] Check the wordpress interface for plugins - did we miss anything?
 
-[ ] Revisit the cache invalidation
-    [ ] If a file is modified, also re-read the metadata
-    [ ] If a directory (or its metadata.yaml) is modified, invalidate it
-        completely
-    [ ] If header/footer is modified, invalidate everything
-    [ ] Invalidation means: re-build the new data structures (in the
-        background), then atomically swap it with the existing data
-    [ ] Cover this with tests
-    [ ] if a file or directory was added then add the route
-    [ ] if a file or directory was removed then drop the route
+    [ ] Revisit the cache invalidation
+        [ ] If a file is modified, also re-read the metadata
+        [ ] If a directory (or its metadata.yaml) is modified, invalidate it
+            completely
+        [ ] If header/footer is modified, invalidate everything
+        [ ] Invalidation means: re-build the new data structures (in the
+            background), then atomically swap it with the existing data
+        [ ] Cover this with tests
+        [ ] if a file or directory was added then add the route
+        [ ] if a file or directory was removed then drop the route
+
+    [ ] Use the new documentation tool as a second test project
+
