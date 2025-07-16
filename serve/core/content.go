@@ -109,6 +109,11 @@ func GetFileWithContent(path string, context *Context) (*File, error) {
 		return nil, fmt.Errorf("file not found: %s", normalizedPath)
 	}
 
+	// Don't attempt to read a file if it is only a redirection
+	if file.RedirectUrl != "" {
+		return &file, nil
+	}
+
 	// If the file is cached then use the cache
 	if len(file.CachedContent) > 0 {
 		return &file, nil

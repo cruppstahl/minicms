@@ -30,7 +30,11 @@ func InitializeRouter(context *Context) (*gin.Engine, error) {
 				return
 			}
 
-			c.Data(200, file.MimeType, []byte(file.CachedContent))
+			if file.RedirectUrl != "" {
+				c.Redirect(302, file.RedirectUrl)
+			} else {
+				c.Data(200, file.MimeType, []byte(file.CachedContent))
+			}
 		})
 	}
 

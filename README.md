@@ -130,7 +130,7 @@
             and Files!)
         [x] Cover all of this with tests
 
-    [ ] Create a basic documentation template
+    [x] Create a basic documentation template
         [x] Create dummy content
         [x] Create main (left) navigation dynamically w/ configuration
             [x] nope, too complex and has drawbacks. undo!
@@ -140,12 +140,12 @@
             JS code goes through the main content div, extracts h1,h2,h3
     	[x] Show date of last (file) update in the footer of each page
     		[x] Use file date, but allow to overwrite it by metadata
-    	[ ] Specify a default index for any directory (i.e. as an index route)
+    	[x] Specify a default index for any directory (i.e. as an index route)
             and implement it as a redirect
     		[x] if an index file exist: use it for the route (/docs)
     		[x] if an index file exist: use it for the route with slash (/docs/)
     		[x] if an index file exist: use it as its own route (/docs/index)
-    		[ ] then do the same with a redirection if Index is specified
+    		[x] then do the same with a redirection if Index is specified
                 in the metadata
 
     [ ] Add search functionality, with keywords and full text

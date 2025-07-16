@@ -19,12 +19,11 @@ type File struct {
 	Author           string    `yaml:"author"`
 	Tags             []string  `yaml:"tags"`
 	ImagePath        string    `yaml:"image"`
-	NavPosition      int       `yaml:"navigation-position"`
-	NavHidden        bool      `yaml:"navigation-hidden"`
 	DateOfLastUpdate time.Time `yaml:"date-of-last-update"`
 	CssFile          string
 	MimeType         string
 	CachedContent    []byte
+	RedirectUrl      string     `yaml:"redirect-url"`
 	IgnoreLayout     bool       `yaml:"ignore-layout"`
 	Directory        *Directory // The directory this file belongs to
 }
@@ -34,9 +33,6 @@ type Directory struct {
 	Url            string
 	Title          string `yaml:"title"`
 	CssFile        string `yaml:"cssfile"`
-	NavPosition    int    `yaml:"navigation-position"`
-	NavHidden      bool   `yaml:"navigation-hidden"`
-	Index          string `yaml:"index"` // The index file for this directory
 	Subdirectories map[string]Directory
 	Files          map[string]File
 }
@@ -50,7 +46,6 @@ func createFileStruct(filePath string, fileName string, directory *Directory, pl
 		Title:        strings.TrimSuffix(strings.TrimSuffix(fileName, ext), "."),
 		MimeType:     plugin.Mimetype(),
 		IgnoreLayout: plugin.IgnoreLayout(),
-		NavPosition:  -1,
 		Directory:    directory,
 	}
 
@@ -93,9 +88,8 @@ func createFileStruct(filePath string, fileName string, directory *Directory, pl
 
 func createDirectoryStruct(localPath string, context *Context) (Directory, error) {
 	directory := Directory{
-		LocalPath:   localPath,
-		Title:       filepath.Base(localPath),
-		NavPosition: -1,
+		LocalPath: localPath,
+		Title:     filepath.Base(localPath),
 	}
 
 	// Construct the path to metadata.yaml
@@ -106,10 +100,7 @@ func createDirectoryStruct(localPath string, context *Context) (Directory, error
 	if err == nil {
 		defer metadataFile.Close()
 		decoder := yaml.NewDecoder(metadataFile)
-		if err := decoder.Decode(&directory); err != nil {
-			log.Printf("Failed to read %s: %v", metadataPath, err)
-			// fall through
-		}
+		decoder.Decode(&directory) // Ignore any errors here, as the file is optional
 	}
 
 	// Open the directory
@@ -176,9 +167,11 @@ func populateFilesystem(directory *Directory, url string, context *Context) {
 			file.Url = url
 			context.Filesystem[url] = file // (e.g. "/doc")
 			// Create another alias with a trailing slash ("/doc/")
-			context.Filesystem[url+"/"] = file
+			if url != "/" {
+				context.Filesystem[url+"/"] = file
+			}
 			// Create another alias for the index ("/doc/index")
-			context.Filesystem[url+"/index"] = file
+			context.Filesystem[filepath.Join(url, "index")] = file
 		} else {
 			file.Url = filepath.Join(url, base)
 			context.Filesystem[file.Url] = file
