@@ -5,13 +5,25 @@ import (
 	"serve/cmd"
 	"serve/core"
 	"serve/plugins/contenttype"
+	"serve/plugins/data"
 )
 
-func registerPlugins(context *core.Context) {
-	mgr := &context.PluginManager
-	core.RegisterContentTypePlugin(mgr, contenttype.NewHtmlPlugin())
-	core.RegisterContentTypePlugin(mgr, contenttype.NewTextPlugin())
-	core.RegisterContentTypePlugin(mgr, contenttype.NewMarkdownPlugin())
+func initializeBuiltinPlugins(context *core.Context) error {
+	plugins := []core.Plugin{
+		contenttype.NewHtmlPlugin(),
+		contenttype.NewTextPlugin(),
+		contenttype.NewMarkdownPlugin(),
+		data.NewSearchPlugin(),
+	}
+
+	for _, plugin := range plugins {
+		err := core.RegisterPlugin(context, plugin)
+		if err != nil {
+			return err
+		}
+		log.Printf("Registered plugin: %s (version: %s)", plugin.Name(), plugin.Version())
+	}
+	return nil
 }
 
 func main() {
@@ -37,7 +49,10 @@ func main() {
 	}
 
 	// Register all builtin plugins
-	registerPlugins(&context)
+	err = initializeBuiltinPlugins(&context)
+	if err != nil {
+		log.Fatalf("Failed to initialize plugin manager: %v", err)
+	}
 
 	// Initialize the cached file system
 	err = core.InitializeFilesystem(&context)
@@ -59,6 +74,15 @@ func main() {
 		return
 	}
 
+	// If any plugins need to be initialized, do it now
+	err = core.InitializeDataPlugins(&context)
+	if err != nil {
+		log.Fatalf("Failed to initialize plugins: %v", err)
+	}
+
 	// From here on we assume that we run the server
 	cmd.Run(&context)
+
+	// Shutdown plugins
+	core.ShutdownPlugins(&context.PluginManager)
 }

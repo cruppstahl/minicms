@@ -19,6 +19,8 @@ type Branding struct {
 	CssFile string `yaml:"cssfile"`
 }
 
+type Plugins map[string]map[string]string
+
 type Config struct {
 	FilePath      string
 	SiteDirectory string
@@ -26,6 +28,7 @@ type Config struct {
 	OutDirectory  string
 	Server        Server   `yaml:"server"`
 	Branding      Branding `yaml:"branding"`
+	Plugins       Plugins  `yaml:"plugins"`
 }
 
 // Options defines the command-line options structure

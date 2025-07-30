@@ -22,6 +22,9 @@
     "Branding": {
       "Favicon": "/assets/favicon.ico",
       "CssFile": "/assets/site.css"
+    },
+    "Plugins": {
+      "List": null
     }
   },
   "Navigation": {

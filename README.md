@@ -149,13 +149,51 @@
                 in the metadata
 
     [ ] Add search functionality, with keywords and full text
-        [ ] Integrate bleve (https://claude.ai/chat/ba078972-162e-4c60-87fd-e7956a15f488)
-        [ ] Rebuild search index (async) if cache is invalidated
-        [ ] Implement Search as a plugin: only activate it if it is enabled,
-		and for a specific directory
+        [x] Create a plugin interface with the following functions:
+            [x] Initialize(params), Shutdown: for the plugin lifecycle
+                Initialize returns more info, e.g. if it requires the full
+                file body
+            [x] AddFile: with every new file that was added
+        [ ] Integrate bleve
+            [x] Initialize the plugin, if enabled
+            [x] Shutdown the plugin, if it exists
+------------------------------
+[ ] Build a graph of files and directories to simplify cache invalidation
+    [ ] Use module from claude.ai (but clean it up first)
+    [ ] content.go define structs for FileMetadata and ContentMetadata
+        (filesystem.go does not handle contents/metadata)
+    [ ] When reading the file system: always read file content (have to
+        read the file anyway)
+    [ ] If a file body needs to be updated: delete the content?
+    [ ] Rebuild file body synchronously (so maybe a flag is not required anyway)
+    [ ] If a dependency is modified: rebuild all dependent files
 
-!!!
-!!! Navigation does not show the "active" URL
+    [ ] ContentTypePlugins and DataPlugins are handled separately (content.go)
+    [ ] Also include File structures for the /layout path, but keep them outside
+        of the "root"
+    [ ] The watcher goes through the tree and watches each directory
+    [ ] If a directory is modified then depending on the operation the tree
+        is updated (e.g. parent directory is re-read from scratch)
+        [ ] ContentTypePlugins and DataPlugins will be invoked automatically
+    [ ] Review the plugins - they need to be threadsafe!
+------------------------------
+            [ ] Feed it with all the files (and their cached content!)
+                -> do this async, e.g. add files to a list and process the
+                    list asynchronously
+            [ ] If the cache of a file is invalidated then delete the document
+                from the search index
+            [ ] Ignore files that have a ignore-for-search metadata flag
+            [ ] Create an endpoint (/q) if the plugin is enabled
+            [ ] If enabled, persist the index on disk
+
+        -------------
+        [ ] Rebuild search index (async) if cache is invalidated
+
+        [ ] Add a Pagination plugin that can "wrap" the search data
+            (is this really a plugin, or just a template function?)
+
+    !!!
+    !!! Navigation does not show the "active" URL
 
     [ ] Support custom 404 page (/content/404.\*), including metadata
         [ ] Add one to crupp.de
@@ -166,7 +204,10 @@
         therefore stored in different repositories)
         -> is this a good idea? This opens the door to all kind of security
             issues
-        -> better enforce that all paths are part of the /content root?
+        -> better enforce that all paths are part of the /content root
+            and that paths have to be RELATIVE (in the navigation and
+            everywhere else!)
+        -> Also, do NOT allow symbolic links! (for security reasons)
 
 !!!
 !!! Review multithreading setup - the cache does not have any protection, but
@@ -191,3 +232,9 @@
 
     [ ] Use the new documentation tool as a second test project
 
+!!!
+!!! Review the data structure
+!!! Files build a graph - they depend on each other (e.g. all content files
+!!! depend on the layouts, the blog overview page depends on the content
+!!! database etc.). Should we store those dependencies? This would make the
+!!! cache invalidation much easier and correct

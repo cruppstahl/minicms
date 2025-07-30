@@ -8,3 +8,7 @@ branding:
   favicon: /assets/favicon.png
   cssfile: /assets/site.css
 
+plugins:
+  builtin/search:
+      index-file: "var/search.idx"
+      index-language: "en"

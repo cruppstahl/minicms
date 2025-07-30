@@ -14,18 +14,19 @@ type ContentTypeMarkdownPlugin struct {
 }
 
 func NewMarkdownPlugin() core.ContentTypePlugin {
-	return ContentTypeMarkdownPlugin{}
+	return &ContentTypeMarkdownPlugin{}
 }
 
-func (ContentTypeMarkdownPlugin) Name() string         { return "builtin/markdown" }
-func (ContentTypeMarkdownPlugin) Version() string      { return "0.1" }
-func (ContentTypeMarkdownPlugin) Mimetype() string     { return "text/html" }
-func (ContentTypeMarkdownPlugin) IgnoreLayout() bool   { return false }
-func (ContentTypeMarkdownPlugin) Id() string           { return "2E9C1AB9-2D58-4BB5-989F-8269C6D2007A" }
-func (ContentTypeMarkdownPlugin) Description() string  { return "Renders markdown files" }
-func (ContentTypeMarkdownPlugin) Extensions() []string { return []string{"md", "markdown"} }
+func (*ContentTypeMarkdownPlugin) Name() string                              { return "builtin/markdown" }
+func (*ContentTypeMarkdownPlugin) Version() string                           { return "0.1" }
+func (*ContentTypeMarkdownPlugin) Mimetype() string                          { return "text/html" }
+func (*ContentTypeMarkdownPlugin) IgnoreLayout() bool                        { return false }
+func (*ContentTypeMarkdownPlugin) Description() string                       { return "Renders markdown files" }
+func (*ContentTypeMarkdownPlugin) Extensions() []string                      { return []string{"md", "markdown"} }
+func (*ContentTypeMarkdownPlugin) Initialize(params map[string]string) error { return nil }
+func (*ContentTypeMarkdownPlugin) Shutdown()                                 {}
 
-func (ContentTypeMarkdownPlugin) Convert(raw string) (string, error) {
+func (*ContentTypeMarkdownPlugin) Render(raw string) (string, error) {
 	markdown := goldmark.New(
 		goldmark.WithExtensions(
 			highlighting.NewHighlighting(

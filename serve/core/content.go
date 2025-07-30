@@ -149,7 +149,7 @@ func GetFileWithContent(path string, context *Context) (*File, error) {
 			i = 1 // Skip header
 		}
 
-		body, err := plugin.Convert(bodies[i])
+		body, err := plugin.Render(bodies[i])
 		if err != nil {
 			// Print error, but then continue as usual
 			log.Printf("failed to convert content for %s using plugin %s: %s",
