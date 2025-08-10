@@ -1,8 +1,9 @@
-LocalPath: templates/business-card-01/content/cv.html
+Path: content/cv.html
 Title: CV
 Author: 
 Tags: []
-ImagePath: 
-CssFile: 
 MimeType: text/html
 IgnoreLayout: false
+RedirectUrl: 
+Directory.CssFile: 
+Directory.Title: 

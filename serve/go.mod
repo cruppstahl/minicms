@@ -8,6 +8,7 @@ require github.com/gin-gonic/gin v1.7.4
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/RoaringBitmap/roaring v0.4.23 // indirect
 	github.com/RoaringBitmap/roaring/v2 v2.4.5 // indirect
 	github.com/adrg/frontmatter v0.2.0 // indirect
 	github.com/alecthomas/chroma/v2 v2.2.0 // indirect
@@ -24,21 +25,33 @@ require (
 	github.com/blevesearch/snowballstem v0.9.0 // indirect
 	github.com/blevesearch/upsidedown_store_api v1.0.2 // indirect
 	github.com/blevesearch/vellum v1.1.0 // indirect
+	github.com/blevesearch/zap/v11 v11.0.14 // indirect
+	github.com/blevesearch/zap/v12 v12.0.14 // indirect
+	github.com/blevesearch/zap/v13 v13.0.6 // indirect
+	github.com/blevesearch/zap/v14 v14.0.5 // indirect
+	github.com/blevesearch/zap/v15 v15.0.3 // indirect
 	github.com/blevesearch/zapx/v11 v11.4.2 // indirect
 	github.com/blevesearch/zapx/v12 v12.4.2 // indirect
 	github.com/blevesearch/zapx/v13 v13.4.2 // indirect
 	github.com/blevesearch/zapx/v14 v14.4.2 // indirect
 	github.com/blevesearch/zapx/v15 v15.4.2 // indirect
 	github.com/blevesearch/zapx/v16 v16.2.4 // indirect
+	github.com/couchbase/vellum v1.0.2 // indirect
 	github.com/dlclark/regexp2 v1.7.0 // indirect
+	github.com/glycerine/go-unsnap-stream v0.0.0-20181221182339-f9677308dec2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
+	github.com/philhofer/fwd v1.0.0 // indirect
+	github.com/steveyen/gtreap v0.1.0 // indirect
+	github.com/tinylib/msgp v1.1.0 // indirect
+	github.com/willf/bitset v1.1.10 // indirect
 	github.com/yuin/goldmark v1.7.12 // indirect
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc // indirect
 	go.etcd.io/bbolt v1.4.0 // indirect
 )
 
 require (
+	github.com/blevesearch/bleve v1.0.14
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-fsnotify/fsnotify v0.0.0-20180321022601-755488143dae // indirect

@@ -1,240 +1,114 @@
-[x] create scaffold for a golang project with gin
-[x] if argv[1] == "run" then argv[2] is the directory with the data
-[x] if argv[1] == "help" then print the help screen
-[x] read authors.yaml - must not be empty
-[x] read global configuration file
-[x] use cmd line arguments to overwrite config values
-[x] move everything to a github repository
-[x] read files and .yaml metadata in each directory, descend recursively
-    (do not read the files though)
-[x] dynamically build all routes to the directories in "/content"
-[x] Bug: do not create routes for subdirectories (e.g. /blog/2025)
-[x] Bug: all URLs return the same content (post3.html)
-[x] build page for a file on demand and in case it was not yet created
-[x] store the generated file in a cache
-[x] fetch the generated file from a cache
-
-[x] assemble the layout (header and footer)
-[x] return html instead of json, with the correct mimetype
-[x] use picocss for a basic layout
-[x] use go template functions to complete header and footer
-
-[x] parse navigation.yaml into the Context structure
-    [x] for each top level item in the navigation: create a route
-    [x] repeat for each nested item (in the navigation)
-    [x] for each *file* in the navigation directory: create a route
-    [x] for each *subdir* in the navigation directory: create a route
-    [x] and store the meta-information in the navigation directory
-    [x] "/" in a directory redirects to the index page
-    [x] enforce absolute paths (urls and locals) in navigation.yaml
-[x] DataTree is then no longer required
-[x] Hide file extension in the route (e.g. /index.md -> /index)
-
-[x] add favicon to site configuration (under "branding")
-[x] add route for static files (router.Static("/static", "./local-assets")
-[x] review templating - do we have enough data for a header/footer?
-    copy Navigation, (parts of)Config, Branding, Users
-    also copy relevant stuff from Directory, File (merge them - settings in
-    File have higher priority than those in Directory)
-[x] move custom css template (site.css) to Branding, use it in header.html
-    adjust header.html, footer.html
-[x] remove Directory and File structure in Navigation; Directory is only
-    required from the File struct itself (as a reference), but it is
-    not required as a standalone object
-[x] File structure is only required in the LookupIndex
-[x] make File.CachedContent a byte array, not a string
-[x] if the data tree changes, then all dependent files need to be regenerated
-    [x] $site/layout: invalidate everything (i.e. delete CachedContent of all
-        text/html files)
-    [x] directory: everything including/below that directory is
-        invalidated
-    [x] directory metadata: everything including/below that directory is
-        invalidated
-    [x] file metadata: file is invalidated
-    [x] file: file is recreated
-
-[x] Create a default template for a minimalistic digital business card
-    [x] Create a new layout for the new page
-    [x] break it up into multiple html files
-    [x] Move inline css to separate file
-    [x] update config, navigation.yaml
-    [x] update the main page (CV) if necessary
-    [x] display date of last update (of the current page) in the footer
-    [x] add a favicon (default symbol: • or ·)
-    [x] use templating to add title, description
-    [x] Check css and html with a linter, and format them properly
-    [x] use templating to add navigation links
-    [x] cmd line args ("create business-card-01 --out=directory") then copy this
-        template to a new (clean!) subdirectory!
-
-[x] Build automated tests
-    [x] Support config option "dump template --out=directory"
-    [x] Dump the whole context (including configuration, navigation etc)
-        to a file ($out/context.json)
-    [x] Also include the LookupIndex in the dump
-    [x] Create html files for a whole site, dump them to a temporary directory
-    [x] Then compare the output against .golden files
-    [x] Look for a better library to parse command line args
-        https://github.com/jessevdk/go-flags
-
-[x] Migrate crupp.de to the new solution
-    [x] Add a command line option 'version' to print the version
-    [x] Reduce width of the layout - it is too wide right now
-    [x] Improve readability of the projects page
-    [x] Automate the deployment, e.g. in a docker container
-        [x] Try without docker first, just by copying and running the binary
-        [x] Use systemd to run the service
-    [x] Set up monitoring (uptimerobot.com)
-
-[ ] Use case: host technical documentation
-    [x] Rename impl to core
-    [x] Move command line option handlers to cmd (help, version, run, dump)
-    [x] Rename "dump" command line option to "static" (including Makefile!)
-    [x] Move file generation logic to new file (content.go)
-    [x] When running serve in ~/prj/miniblog, it will also react to changes
-        in README.md (which is outside of the file tree)
-    [x] Add metadata option to ignore header/footer 
-        [x] Add this to the tests
-    [x] Introduce a plugin mechanism
-        [x] ContentTypePlugins depend on content type and file extension,
-            and transform a whole file
-        [x] Rewrite current logic as a new plugin
-        [x] The plugins decide about the mimetype
-        [x] The plugins decide whether header/footer is included (false for
-            text/html)
-            -> this is stored in the metadata, and evaluated in the router
-    [x] Raw text is used as is, without header/footer
-        [x] This is a new plugin (plugins/contenttype/text.go)
-        [x] Add this to the tests
-    [x] Support inline yaml for metadata (not in a separate file!)
-        [x] Should we still support the old file format? - yes!
-        [x] Add this to the tests
-    [x] Support markdown templating and formatting with github.com/yuin/goldmark
-        [x] This is a new plugin (plugins/contenttype/markdown.go)
-        [x] Source code is formatted in a different style, with syntax
-            highlighting
-        [x] Use this *after* templating!
-    [x] Create a template for the documentation use case
-        [x] Create a nice template
-        [x] Set up the boilerplate for the project and a main dummy page
-            in markdown
-        [x] Create sample content (about 10 pages)
-
-    [x] Build navigation dynamically
-        [x] Use .PageTitle instead of "Label"
-            [x] By default, use the file name - respect Lower/Uppercase!
-        [x] Remove .Url - use the relative file path instead
-        [x] Set the sort order in the navigation's metadata, for
-            directories and files
-        [x] Add a metadata flag "hide from navigation" (for Directories
-            and Files!)
-        [x] Cover all of this with tests
-
-    [x] Create a basic documentation template
-        [x] Create dummy content
-        [x] Create main (left) navigation dynamically w/ configuration
-            [x] nope, too complex and has drawbacks. undo!
-        [x] If a navigation.yaml exists, then parse the yaml file
-            [x] adjust the templates, fix 'make test'
-        [x] Create lower-level (right) navigation dynamically:
-            JS code goes through the main content div, extracts h1,h2,h3
-    	[x] Show date of last (file) update in the footer of each page
-    		[x] Use file date, but allow to overwrite it by metadata
-    	[x] Specify a default index for any directory (i.e. as an index route)
-            and implement it as a redirect
-    		[x] if an index file exist: use it for the route (/docs)
-    		[x] if an index file exist: use it for the route with slash (/docs/)
-    		[x] if an index file exist: use it as its own route (/docs/index)
-    		[x] then do the same with a redirection if Index is specified
-                in the metadata
-
-    [ ] Add search functionality, with keywords and full text
-        [x] Create a plugin interface with the following functions:
-            [x] Initialize(params), Shutdown: for the plugin lifecycle
-                Initialize returns more info, e.g. if it requires the full
-                file body
-            [x] AddFile: with every new file that was added
-        [ ] Integrate bleve
-            [x] Initialize the plugin, if enabled
-            [x] Shutdown the plugin, if it exists
-------------------------------
 [ ] Build a graph of files and directories to simplify cache invalidation
-    [ ] Use module from claude.ai (but clean it up first)
-    [ ] content.go define structs for FileMetadata and ContentMetadata
-        (filesystem.go does not handle contents/metadata)
-    [ ] When reading the file system: always read file content (have to
+    [x] Use a graph of File objects, and a hierarchy for Files/Directories
+    [x] When reading the file system: always read file content (have to
         read the file anyway)
-    [ ] If a file body needs to be updated: delete the content?
-    [ ] Rebuild file body synchronously (so maybe a flag is not required anyway)
-    [ ] If a dependency is modified: rebuild all dependent files
+    [x] If a file body needs to be updated: delete the content
+    [x] Handle new files, deleted files, new directories and deleted directories
+    [x] Rebuild files if a dependency is modified
+    [x] Also include File structures for the /layout path
 
-    [ ] ContentTypePlugins and DataPlugins are handled separately (content.go)
-    [ ] Also include File structures for the /layout path, but keep them outside
-        of the "root"
-    [ ] The watcher goes through the tree and watches each directory
-    [ ] If a directory is modified then depending on the operation the tree
+    [x] The watcher goes through the tree and watches each directory
+    [x] If a directory is modified then depending on the operation the tree
         is updated (e.g. parent directory is re-read from scratch)
-        [ ] ContentTypePlugins and DataPlugins will be invoked automatically
-    [ ] Review the plugins - they need to be threadsafe!
-------------------------------
-            [ ] Feed it with all the files (and their cached content!)
-                -> do this async, e.g. add files to a list and process the
-                    list asynchronously
-            [ ] If the cache of a file is invalidated then delete the document
-                from the search index
-            [ ] Ignore files that have a ignore-for-search metadata flag
-            [ ] Create an endpoint (/q) if the plugin is enabled
-            [ ] If enabled, persist the index on disk
+        [x] ContentTypePlugins and DataPlugins will be invoked automatically
+    [x] Review the plugins - they need to be threadsafe!
+    [x] Stop supporting .yaml files with metadata for the files
 
-        -------------
-        [ ] Rebuild search index (async) if cache is invalidated
+    [x] Implement the existing plugins
+        [x] builtin/text
+        [x] builtin/markdown
+        [x] builtin/html
+        [x] builtin/search (as a dummy, for now)
 
-        [ ] Add a Pagination plugin that can "wrap" the search data
-            (is this really a plugin, or just a template function?)
+    [x] Add helper functions for metadata ("GetBool" etc)
+    [x] Only create the Search plugin on demand!
+    [x] Store metadata as an opaque structure in File and Directory
+    [x] Plugins need to assign metadata["ContentType"] (and others!)
 
-    !!!
-    !!! Navigation does not show the "active" URL
+    [x] Plugins need to skip frontmatter - but return it as metadata!
+        [x] layout files do not have frontmatter!
 
-    [ ] Support custom 404 page (/content/404.\*), including metadata
-        [ ] Add one to crupp.de
-        [ ] Add this as a test
+    [x] When starting, print plugins and their priorities (ordered
+        by priorities)!
 
-    [ ] Verify that the navigation can link to completely different directories
-        (e.g. blog and documentation are maintained by different teams, and
-        therefore stored in different repositories)
-        -> is this a good idea? This opens the door to all kind of security
-            issues
-        -> better enforce that all paths are part of the /content root
-            and that paths have to be RELATIVE (in the navigation and
-            everywhere else!)
-        -> Also, do NOT allow symbolic links! (for security reasons)
+    [x] Make sure that existing tests are running
+        [x] /templates/business-01
+        [x] /templates/documentation-01
+        [x] /templates/current
+        [x] `make test` needs to run successfully
 
-!!!
-!!! Review multithreading setup - the cache does not have any protection, but
-!!! Can be invalidated at any time
-!!! - Add r/w-mutex
-!!! - Rebuild cache in the background, then swap atomically?
+    [x] FsWatcher needs to ignore temp files (e.g. index.html~)
 
-    [ ] Do a major round of refactoring
-        [ ] Review everything - is it idiomatic golang code?
-        [ ] Check the wordpress interface for plugins - did we miss anything?
+    [x] Go back a step and review/draw happy/unhappy paths (use miro)
+        [x] Plugins: Registration, helper functions
+        [x] FileManager: Initialization
+        [x] Router: Initialization
+        [x] Router: Handling requests
+        [x] FsWatcher: Initialization
+        [x] FsWatcher: Registration, helper functions
+        [x] FileManager: Initialize a single file (plugin flow)
+        [x] FsWatcher triggered by a file update event
 
-    [ ] Revisit the cache invalidation
-        [ ] If a file is modified, also re-read the metadata
-        [ ] If a directory (or its metadata.yaml) is modified, invalidate it
-            completely
-        [ ] If header/footer is modified, invalidate everything
-        [ ] Invalidation means: re-build the new data structures (in the
-            background), then atomically swap it with the existing data
-        [ ] Cover this with tests
-        [ ] if a file or directory was added then add the route
-        [ ] if a file or directory was removed then drop the route
+    [x] Use go's race detector to find multithreading issues
+        go run -race main.go
 
-    [ ] Use the new documentation tool as a second test project
+    [x] Differentiate between "static" and "dump" - static just
+        generates HTML files (w/o metadata etc)
+        [x] "dump" generates HTML and metadata and configuration
+        [x] 'make test' should run now
 
-!!!
-!!! Review the data structure
-!!! Files build a graph - they depend on each other (e.g. all content files
-!!! depend on the layouts, the blog overview page depends on the content
-!!! database etc.). Should we store those dependencies? This would make the
-!!! cache invalidation much easier and correct
+    [ ] Use case: a new file is created
+        - Make sure that a route is created!
+    [ ] Use case: a file is deleted
+        - Make sure that the route is deleted!
+    [ ] Use case: a new directory is created
+        - Make sure that all routes are created!
+    [ ] Use case: a directory is deleted
+        - Make sure that all routes are deleted!
+
+    [ ] Add more tests about file graph, hierarchy, metadata, plugins, router
+        [ ] Systematically add/remove/update files and whole directories
+        [ ] Update dependent files (layout/*)
+        [ ] Add/remove metadata
+        [ ] Make sure ModTime timestamp is updated
+        [ ] Test against race conditions (how?)
+        [ ] Make sure that caching is used correctly (i.e. files not updated
+            unless it is necessary)
+
+    [ ] Test redirects
+
+[ ] Add search functionality, with keywords and full text
+    [x] Create a plugin interface with the following functions:
+        [x] Initialize(params), Shutdown: for the plugin lifecycle
+            Initialize returns more info, e.g. if it requires the full
+            file body
+        [x] AddFile: with every new file that was added
+    [ ] Integrate bleve
+        [x] Initialize the plugin, if enabled
+        [x] Shutdown the plugin, if it exists
+        [x] Feed it with all the files (and their cached content!)
+        [ ] If the cache of a file is invalidated then delete the document
+            from the search index
+        [ ] Ignore files that have a ignore-for-search metadata flag
+        [ ] If enabled, persist the index on disk
+
+    [ ] Use metadata to decide whether a file should be added to
+        the search index
+    [ ] Create an endpoint to query the index (/q) if the plugin is enabled
+
+[ ] Support custom 404 page (/content/404.\*), including metadata
+    [ ] Add one to crupp.de
+    [ ] Add this as a test
+
+[ ] Verify that the navigation can link to completely different directories
+    (e.g. blog and documentation are maintained by different teams, and
+    therefore stored in different repositories)
+    -> is this a good idea? This opens the door to all kind of security
+        issues
+    -> better enforce that all paths are part of the /content root
+        and that paths have to be RELATIVE (in the navigation and
+        everywhere else!)
+    -> Also, do NOT allow symbolic links! (for security reasons)
+
+[ ] How about a new plugin for builtin/minifier?
+

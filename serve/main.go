@@ -1,88 +1,99 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"serve/cmd"
 	"serve/core"
-	"serve/plugins/contenttype"
-	"serve/plugins/data"
+	"serve/plugins"
 )
 
-func initializeBuiltinPlugins(context *core.Context) error {
-	plugins := []core.Plugin{
-		contenttype.NewHtmlPlugin(),
-		contenttype.NewTextPlugin(),
-		contenttype.NewMarkdownPlugin(),
-		data.NewSearchPlugin(),
+func initializeAndRunPlugins(ctx *core.Context) error {
+	fm := ctx.FileManager
+	pm := fm.GetPluginManager()
+	pm.RegisterPlugin(&plugins.BuiltinHtmlPlugin{Context: ctx})
+	pm.RegisterPlugin(&plugins.BuiltinTextPlugin{})
+	pm.RegisterPlugin(plugins.NewMarkdownPlugin(ctx))
+
+	if params, exists := ctx.Config.Plugins["builtin/search"]; exists {
+		pm.RegisterPlugin(plugins.NewSearchPlugin(params))
 	}
 
-	for _, plugin := range plugins {
-		err := core.RegisterPlugin(context, plugin)
-		if err != nil {
-			return err
-		}
-		log.Printf("Registered plugin: %s (version: %s)", plugin.Name(), plugin.Version())
+	// Print all plugins including their priority
+	fmt.Println("Plugins:")
+	for _, plugin := range ctx.FileManager.GetPluginManager().ListPlugins() {
+		fmt.Printf(" - %s\n", plugin)
 	}
+
+	// Then invoke all plugins on the files
+	fm.ProcessAllFiles()
+
+	return nil
+}
+
+func initializeFileManager(ctx *core.Context) error {
+	fm := core.NewFileManager(ctx.Config.SiteDirectory)
+
+	// Load the entire "content" directory structure
+	err := fm.WalkDirectory("content")
+	if err != nil {
+		fmt.Printf("Error loading directory: %v\n", err)
+		return err
+	}
+
+	// ... and the layout directory
+	err = fm.WalkDirectory("layout")
+	if err != nil {
+		fmt.Printf("Error loading directory: %v\n", err)
+		return err
+	}
+
+	ctx.FileManager = fm
 	return nil
 }
 
 func main() {
 	var err error
-	var context core.Context
+	var ctx core.Context
 
 	// parse command line arguments
-	context.Config, err = core.ParseCommandLineArguments()
+	ctx.Config, err = core.ParseCommandLineArguments()
 	if err != nil {
 		return
 	}
 
 	// If requested, print the version and leave
-	if context.Config.Mode == "version" {
+	if ctx.Config.Mode == "version" {
 		cmd.Version()
 		return
 	}
 
 	// Now read all yaml files and the file tree
-	err = core.InitializeContext(&context)
+	err = core.InitializeContext(&ctx)
 	if err != nil {
 		log.Fatalf("Failed to initialize context: %v", err)
 	}
 
-	// Register all builtin plugins
-	err = initializeBuiltinPlugins(&context)
-	if err != nil {
-		log.Fatalf("Failed to initialize plugin manager: %v", err)
-	}
-
 	// Initialize the cached file system
-	err = core.InitializeFilesystem(&context)
+	err = initializeFileManager(&ctx)
 	if err != nil {
 		log.Fatalf("Failed to initialize lookup index: %v", err)
 	}
 
-	// Build the Navigation structure
-	context.Navigation, err = core.InitializeNavigation(&context)
+	// Initialize and run all builtin plugins
+	err = initializeAndRunPlugins(&ctx)
 	if err != nil {
-		log.Fatalf("Failed to initialize navigation: %v", err)
+		log.Fatalf("Failed to initialize plugin manager: %v", err)
 	}
 
 	// If requested, dump the whole context and the file tree to a directory
 	// This is used for testing (the directory can then be compared to
 	// a "golden" set of files, and any deviation is a bug)
-	if context.Config.Mode == "static" {
-		cmd.Static(&context)
+	if ctx.Config.Mode == "static" || ctx.Config.Mode == "dump" {
+		cmd.Dump(&ctx, ctx.Config.Mode == "dump")
 		return
 	}
 
-	// If any plugins need to be initialized, do it now
-	err = core.InitializeDataPlugins(&context)
-	if err != nil {
-		log.Fatalf("Failed to initialize plugins: %v", err)
-	}
-
 	// From here on we assume that we run the server
-	cmd.Run(&context)
-
-	// Shutdown plugins
-	core.ShutdownPlugins(&context.PluginManager)
+	cmd.Run(&ctx)
 }

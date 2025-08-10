@@ -11,7 +11,7 @@
   "Config": {
     "FilePath": "templates/business-card-01/config/site.yaml",
     "SiteDirectory": "templates/business-card-01",
-    "Mode": "static",
+    "Mode": "dump",
     "OutDirectory": "/tmp/test-out/business-card-01",
     "Server": {
       "Port": 8080,
@@ -23,9 +23,7 @@
       "Favicon": "/assets/favicon.ico",
       "CssFile": "/assets/site.css"
     },
-    "Plugins": {
-      "List": null
-    }
+    "Plugins": null
   },
   "Navigation": {
     "FilePath": "templates/business-card-01/config/navigation.yaml",
@@ -41,7 +39,7 @@
         "Url": "/projects",
         "Title": "Projects",
         "Children": null,
-        "IsActive": false,
+        "IsActive": true,
         "IsDirectory": false
       },
       {
@@ -53,76 +51,116 @@
       }
     ]
   },
-  "Filesystem": {
-    "/": {
-      "LocalPath": "templates/business-card-01/content/index.html",
-      "Url": "/",
-      "Title": "Home",
-      "Author": "",
-      "Tags": null,
-      "ImagePath": "",
-      "DateOfLastUpdate": "2025-07-14T21:07:15.649053692+02:00",
-      "CssFile": "",
-      "MimeType": "text/html",
-      "CachedContent": null,
-      "RedirectUrl": "",
-      "IgnoreLayout": false,
-      "Directory": null
+  "FileManager": {
+    "Files": {
+      "content/cv.html": {
+        "Name": "cv.html",
+        "Path": "content/cv.html",
+        "Routes": [
+          "/cv.html",
+          "/cv"
+        ],
+        "Content": null,
+        "Parent": null,
+        "Dependencies": null,
+        "Dependents": null,
+        "Metadata": {
+          "Title": "CV",
+          "Author": "",
+          "CssFile": "",
+          "Tags": null,
+          "MimeType": "text/html",
+          "RedirectUrl": "",
+          "IgnoreLayout": false,
+          "DateOfLastUpdate": "0001-01-01T00:00:00Z"
+        }
+      },
+      "content/index.html": {
+        "Name": "index.html",
+        "Path": "content/index.html",
+        "Routes": [
+          "/index.html",
+          "/index",
+          "/"
+        ],
+        "Content": null,
+        "Parent": null,
+        "Dependencies": null,
+        "Dependents": null,
+        "Metadata": {
+          "Title": "Home",
+          "Author": "",
+          "CssFile": "",
+          "Tags": null,
+          "MimeType": "text/html",
+          "RedirectUrl": "",
+          "IgnoreLayout": false,
+          "DateOfLastUpdate": "0001-01-01T00:00:00Z"
+        }
+      },
+      "content/projects.html": {
+        "Name": "projects.html",
+        "Path": "content/projects.html",
+        "Routes": [
+          "/projects.html",
+          "/projects"
+        ],
+        "Content": null,
+        "Parent": null,
+        "Dependencies": null,
+        "Dependents": null,
+        "Metadata": {
+          "Title": "Projects",
+          "Author": "",
+          "CssFile": "",
+          "Tags": null,
+          "MimeType": "text/html",
+          "RedirectUrl": "",
+          "IgnoreLayout": false,
+          "DateOfLastUpdate": "0001-01-01T00:00:00Z"
+        }
+      },
+      "layout/footer.html": {
+        "Name": "footer.html",
+        "Path": "layout/footer.html",
+        "Routes": null,
+        "Content": null,
+        "Parent": null,
+        "Dependencies": null,
+        "Dependents": null,
+        "Metadata": {
+          "Title": "",
+          "Author": "",
+          "CssFile": "",
+          "Tags": null,
+          "MimeType": "",
+          "RedirectUrl": "",
+          "IgnoreLayout": false,
+          "DateOfLastUpdate": "0001-01-01T00:00:00Z"
+        }
+      },
+      "layout/header.html": {
+        "Name": "header.html",
+        "Path": "layout/header.html",
+        "Routes": null,
+        "Content": null,
+        "Parent": null,
+        "Dependencies": null,
+        "Dependents": null,
+        "Metadata": {
+          "Title": "",
+          "Author": "",
+          "CssFile": "",
+          "Tags": null,
+          "MimeType": "",
+          "RedirectUrl": "",
+          "IgnoreLayout": false,
+          "DateOfLastUpdate": "0001-01-01T00:00:00Z"
+        }
+      }
     },
-    "/cv": {
-      "LocalPath": "templates/business-card-01/content/cv.html",
-      "Url": "/cv",
-      "Title": "CV",
-      "Author": "",
-      "Tags": null,
-      "ImagePath": "",
-      "DateOfLastUpdate": "2025-07-14T21:07:15.649053692+02:00",
-      "CssFile": "",
-      "MimeType": "text/html",
-      "CachedContent": null,
-      "RedirectUrl": "",
-      "IgnoreLayout": false,
-      "Directory": null
-    },
-    "/index": {
-      "LocalPath": "templates/business-card-01/content/index.html",
-      "Url": "/",
-      "Title": "Home",
-      "Author": "",
-      "Tags": null,
-      "ImagePath": "",
-      "DateOfLastUpdate": "2025-07-14T21:07:15.649053692+02:00",
-      "CssFile": "",
-      "MimeType": "text/html",
-      "CachedContent": null,
-      "RedirectUrl": "",
-      "IgnoreLayout": false,
-      "Directory": null
-    },
-    "/projects": {
-      "LocalPath": "templates/business-card-01/content/projects.html",
-      "Url": "/projects",
-      "Title": "Projects",
-      "Author": "",
-      "Tags": null,
-      "ImagePath": "",
-      "DateOfLastUpdate": "2025-07-14T21:07:15.649053692+02:00",
-      "CssFile": "",
-      "MimeType": "text/html",
-      "CachedContent": null,
-      "RedirectUrl": "",
-      "IgnoreLayout": false,
-      "Directory": null
-    }
-  },
-  "Root": {
-    "LocalPath": "",
-    "Url": "",
-    "Title": "",
-    "CssFile": "",
-    "Subdirectories": null,
-    "Files": null
+    "SiteDirectory": "templates/business-card-01"
   },
   "PluginManager": {},
-  "Watcher": null
+  "FileWatcher": null
 }

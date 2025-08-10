@@ -43,6 +43,7 @@ type Options struct {
 type Commands struct {
 	Run     RunCommand     `command:"run" description:"Run the server from a directory"`
 	Static  StaticCommand  `command:"static" description:"Run as static html generator"`
+	Dump    DumpCommand    `command:"dump" description:"Dumps the whole state to disk"`
 	Version VersionCommand `command:"version" description:"Print the build version"`
 }
 
@@ -53,6 +54,12 @@ type RunCommand struct {
 }
 
 type StaticCommand struct {
+	Args struct {
+		Directory string `positional-arg-name:"directory" description:"Directory with source files"`
+	} `positional-args:"yes" required:"yes"`
+}
+
+type DumpCommand struct {
 	Args struct {
 		Directory string `positional-arg-name:"directory" description:"Directory with source files"`
 	} `positional-args:"yes" required:"yes"`
@@ -94,6 +101,8 @@ func ParseCommandLineArguments() (Config, error) {
 		"Run the server from the specified directory", &commands.Run)
 	parser.AddCommand("static", "Generate static html files",
 		"Generate static html files for the specified directory", &commands.Static)
+	parser.AddCommand("dump", "Dumps internal state (for testing)",
+		"Process the specified directory, then dump the whole state", &commands.Dump)
 	parser.AddCommand("version", "Print the build version",
 		"Print the build version", &commands.Version)
 
@@ -124,6 +133,9 @@ func ParseCommandLineArguments() (Config, error) {
 		case "static":
 			config.Mode = "static"
 			config.SiteDirectory = commands.Static.Args.Directory
+		case "dump":
+			config.Mode = "dump"
+			config.SiteDirectory = commands.Dump.Args.Directory
 		case "version":
 			config.Mode = "version"
 		}
@@ -137,7 +149,7 @@ func ParseCommandLineArguments() (Config, error) {
 		}
 	}
 
-	if config.Mode == "dump" {
+	if config.Mode == "dump" || config.Mode == "static" {
 		if config.SiteDirectory == "" {
 			return config, &flags.Error{
 				Type:    flags.ErrRequired,

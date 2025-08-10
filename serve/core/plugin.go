@@ -1,99 +1,144 @@
 package core
 
 import (
-	"errors"
-	"strings"
+	"fmt"
+	"sort"
+	"sync"
 )
 
+// PluginContext provides context information to plugins
+type PluginContext struct {
+	File          *File
+	FileManager   *FileManager
+	SiteDirectory string // Path to the site root
+}
+
+// PluginResult represents the result of plugin execution
+type PluginResult struct {
+	Success      bool
+	Error        error
+	Modified     bool              // Whether the file was modified
+	NewContent   []byte            // New content if file was modified
+	OutputFiles  map[string][]byte // Additional files created
+	MimeType     string            // mime type of the file
+	Routes       []string          // Routes this file should be associated with
+	Dependencies []*File           // Dependencies this file has
+}
+
+// Plugin interface that all plugins must implement
 type Plugin interface {
+	// Name returns the plugin name
 	Name() string
-	Version() string
-	Description() string
-	Initialize(params map[string]string) error
-	Shutdown()
+
+	// CanProcess determines if this plugin can process the given file
+	CanProcess(file *File) bool
+
+	// Process processes the file and returns the result
+	Process(ctx *PluginContext) *PluginResult
+
+	// Priority returns the execution priority (lower numbers = higher priority)
+	Priority() int
 }
 
-type ContentTypePlugin interface {
-	Plugin
-	Mimetype() string
-	IgnoreLayout() bool
-	Extensions() []string
-
-	Render(raw string) (string, error)
-}
-
-type DataPlugin interface {
-	Plugin
-
-	AddFile(file *File) error
-}
-
+// PluginManager manages all registered plugins
 type PluginManager struct {
-	plugins        map[string]Plugin
-	contentTypeMap map[string]ContentTypePlugin
+	mu      sync.RWMutex
+	plugins []Plugin
 }
 
-var ErrPluginAlreadyRegistered = errors.New("Plugin already registered")
-var ErrExtensionAlreadyRegistered = errors.New("File extension already registered")
-
-func RegisterPlugin(context *Context, plugin Plugin) error {
-	var err error
-	manager := &context.PluginManager
-	name := plugin.Name()
-
-	if _, exists := manager.plugins[name]; exists {
-		return ErrPluginAlreadyRegistered
+// NewPluginManager creates a new plugin manager
+func NewPluginManager() *PluginManager {
+	return &PluginManager{
+		plugins: make([]Plugin, 0),
 	}
-	manager.plugins[name] = plugin
+}
 
-	// If the plugin is a ContentTypePlugin, register its extensions
-	if contentTypePlugin, ok := plugin.(ContentTypePlugin); ok {
-		for _, ext := range contentTypePlugin.Extensions() {
-			ext = strings.ToLower(ext)
-			if _, exists := manager.contentTypeMap[ext]; exists {
-				return ErrExtensionAlreadyRegistered
+// RegisterPlugin registers a new plugin
+func (pm *PluginManager) RegisterPlugin(plugin Plugin) {
+	pm.mu.Lock()
+	defer pm.mu.Unlock()
+
+	pm.plugins = append(pm.plugins, plugin)
+
+	// Sort plugins by priority (lower numbers first)
+	sort.Slice(pm.plugins, func(i, j int) bool {
+		return pm.plugins[i].Priority() < pm.plugins[j].Priority()
+	})
+}
+
+// GetPluginsForFile returns all plugins that can process the given file
+func (pm *PluginManager) GetPluginsForFile(file *File) []Plugin {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+
+	var matchingPlugins []Plugin
+	for _, plugin := range pm.plugins {
+		if plugin.CanProcess(file) {
+			matchingPlugins = append(matchingPlugins, plugin)
+		}
+	}
+
+	return matchingPlugins
+}
+
+// ListPlugins returns information about all registered plugins
+func (pm *PluginManager) ListPlugins() []string {
+	pm.mu.RLock()
+	defer pm.mu.RUnlock()
+
+	var list []string
+	for _, plugin := range pm.plugins {
+		list = append(list, fmt.Sprintf("%s (priority: %d)", plugin.Name(), plugin.Priority()))
+	}
+
+	return list
+}
+
+// Processes a file with all applicable plugins. Returns a copy of the modified file.
+func (pm *PluginManager) Process(copy File, fm *FileManager) *File {
+	plugins := pm.GetPluginsForFile(&copy)
+
+	// TODO we need to lock the file, or swap it atomically
+
+	ctx := &PluginContext{
+		File:          &copy,
+		FileManager:   fm,
+		SiteDirectory: fm.SiteDirectory,
+	}
+
+	for _, plugin := range plugins {
+		result := plugin.Process(ctx)
+
+		// If plugin modified the file content, update it
+		if result.Modified && result.NewContent != nil {
+			copy.Content = result.NewContent
+		}
+
+		// Handle additional output files
+		/*
+			if result.OutputFiles != nil {
+				for outputPath, content := range result.OutputFiles {
+					// Add output files to the file manager
+					file := fm.AddFile(outputPath)
+					file.Content = content
+					// TODO also add dependencies!?
+				}
 			}
-			manager.contentTypeMap[ext] = contentTypePlugin
+		*/
+
+		// Store dependencies
+		for _, dep := range result.Dependencies {
+			copy.AddDependency(dep)
+		}
+
+		// Merge metadata
+		copy.Metadata.MimeType = result.MimeType
+
+		// Collect routes
+		if result.Routes != nil {
+			copy.Routes = result.Routes
 		}
 	}
 
-	// Initialize it with the configuration options in context.Config.Plugins
-	if config, exists := context.Config.Plugins[name]; exists {
-		if exists {
-			err = plugin.Initialize(config)
-		} else {
-			err = plugin.Initialize(make(map[string]string))
-		}
-		if err != nil {
-			return errors.New("Failed to initialize data plugin: " + name + " - " + err.Error())
-		}
-	}
-
-	return nil
-}
-
-func GetContentTypePluginByExtension(mgr *PluginManager, ext string) (ContentTypePlugin, bool) {
-	ext = strings.ToLower(ext)
-	if plugin, exists := mgr.contentTypeMap[ext]; exists {
-		return plugin, true
-	}
-	return nil, false
-}
-
-func CreatePluginManager() (PluginManager, error) {
-	var mgr PluginManager
-	mgr.plugins = make(map[string]Plugin, 0)
-	mgr.contentTypeMap = make(map[string]ContentTypePlugin, 0)
-
-	return mgr, nil
-}
-
-func ShutdownPlugins(mgr *PluginManager) {
-	for _, plugin := range mgr.plugins {
-		if dataPlugin, ok := plugin.(DataPlugin); ok {
-			dataPlugin.Shutdown()
-		}
-	}
-	mgr.plugins = nil
-	mgr.contentTypeMap = nil
+	return &copy
 }

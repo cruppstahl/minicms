@@ -1,22 +1,22 @@
 main:
-  - local-path: "/home"
-    url: "/"
-  - local-path: "/about"
-    url: "/about"
-  - local-path: "/pages"
-    url: "/pages"
+  - url: "/"
+    title: Home
+  - url: "/about"
+    title: About
+  - url: "/pages"
+    title: Pages
     children:
-      - local-path: "/pages/legal"
-        url: "/pages/legal"
-  - local-path: "/docs"
-    url: "/docs"
+      - url: "/pages/legal"
+        title: Legal
+  - url: "/docs"
+    title: Docs
     children:
-      - local-path: "/docs/getting-started"
-        url: "/docs/getting-started"
-      - local-path: "/docs/api"
-        url: "/docs/api"
-  - local-path: "/blog"
-    url: "/blog"
-  - local-path: "/shop"
-    url: "/shop"
+      - url: "/docs/getting-started"
+        title: Getting Started
+      - url: "/docs/api"
+        title: API
+  - url: "/blog"
+    title: Blog
+  - url: "/shop"
+    title: Shop
 

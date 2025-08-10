@@ -1,28 +1,47 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"serve/core"
 	"strconv"
 )
 
-func Run(context *core.Context) {
+func initializeFsWatcher(ctx *core.Context) error {
+	// Initialize the file watcher
+	watcher, err := core.NewFileWatcher(ctx.FileManager)
+	if err != nil {
+		return fmt.Errorf("failed to create file watcher: %w", err)
+	}
+
+	ctx.FileWatcher = watcher
+
+	// Start watching the content directory
+	err = watcher.Start(ctx.Config.SiteDirectory)
+	if err != nil {
+		return fmt.Errorf("failed to start file watcher: %w", err)
+	}
+
+	return nil
+}
+
+func Run(ctx *core.Context) {
 	// The FsWatcher will invalidate cached file contents if the underlying file
 	// is changed
-	err := core.InitializeFsWatcher(context)
+	err := initializeFsWatcher(ctx)
 	if err != nil {
 		log.Fatalf("failed to initialize file watcher: %v", err)
 	}
-	defer context.Watcher.Close()
+	defer ctx.FileWatcher.Stop()
 
 	// Set up the routes
-	router, err := core.InitializeRouter(context)
+	router, err := core.InitializeRouter(ctx)
 	if err != nil {
 		log.Fatalf("Failed to set up routes: %v", err)
 	}
 
 	// Then run the server
-	err = router.Run(":" + strconv.Itoa(context.Config.Server.Port))
+	err = router.Run(":" + strconv.Itoa(ctx.Config.Server.Port))
 	if err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}

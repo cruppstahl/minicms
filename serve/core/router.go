@@ -1,45 +1,44 @@
 package core
 
 import (
-	"log"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func InitializeRouter(context *Context) (*gin.Engine, error) {
+// Helper function to capture file
+func makeFileHandler(fm *FileManager, path string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		file := fm.GetFile(path)
+		if file.Metadata.RedirectUrl != "" {
+			c.Redirect(302, file.Metadata.RedirectUrl)
+		} else {
+			c.Data(200, file.Metadata.MimeType, []byte(file.Content))
+		}
+	}
+}
+
+func InitializeRouter(ctx *Context) (*gin.Engine, error) {
 	router := gin.Default()
 
 	// Store context in the router's gin context
 	router.Use(func(c *gin.Context) {
-		c.Set("context", context)
+		c.Set("context", ctx)
 		c.Next()
 	})
 
 	// Go through the Filesystem structure and set up the routes
-	for url := range context.Filesystem {
-		router.GET(url, func(c *gin.Context) {
-			// Don't forget type assertion when getting the connection from context.
-			context, _ := c.MustGet("context").(*Context)
-
-			file, err := GetFileWithContent(c.Request.URL.Path, context)
-			if err != nil {
-				log.Printf("Failed to get file for path %s: %v", c.Request.URL.Path, err)
-				c.HTML(500, "error.html", gin.H{
-					"message": "Internal Server Error",
-				})
-				return
+	for _, file := range ctx.FileManager.GetAllFiles() {
+		// Only create routes for the files in "content/"
+		if strings.HasPrefix(file.Path, "content/") {
+			for _, route := range file.Routes {
+				router.GET(route, makeFileHandler(ctx.FileManager, file.Path))
 			}
-
-			if file.RedirectUrl != "" {
-				c.Redirect(302, file.RedirectUrl)
-			} else {
-				c.Data(200, file.MimeType, []byte(file.CachedContent))
-			}
-		})
+		}
 	}
 
-	// Add a static route
-	staticDir := context.Config.SiteDirectory + "/assets"
+	// Add a static route for the assets
+	staticDir := ctx.Config.SiteDirectory + "/assets"
 	router.Static("/assets", staticDir)
 
 	return router, nil
