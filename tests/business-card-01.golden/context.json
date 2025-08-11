@@ -23,7 +23,7 @@
       "Favicon": "/assets/favicon.ico",
       "CssFile": "/assets/site.css"
     },
-    "Plugins": null
+    "Plugins": {}
   },
   "Navigation": {
     "FilePath": "templates/business-card-01/config/navigation.yaml",

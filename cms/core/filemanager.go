@@ -118,24 +118,45 @@ func (fm *FileManager) GetPluginManager() *PluginManager {
 // Processes all files with their applicable plugins (thread-safe)
 func (fm *FileManager) ProcessAllFiles() {
 	fm.mu.RLock()
-	defer fm.mu.RUnlock()
+	files := make(map[string]*File, len(fm.Files))
+	maps.Copy(files, fm.Files)
+	fm.mu.RUnlock()
 
-	for path, file := range fm.Files {
+	// process outside locks (plugin code may be slow)
+	for path, file := range files {
 		newFile := fm.pluginManager.Process(*file, fm)
+		// write back under write lock
+		fm.mu.Lock()
 		fm.Files[path] = newFile
+		fm.mu.Unlock()
 	}
 }
 
 // Processes all files which need to be updated (e.g. because they were modified)
 func (fm *FileManager) ProcessUpdatedFiles() {
-	fm.mu.RLock()
-	defer fm.mu.RUnlock()
+	// collect targets under read lock
+	type upd struct {
+		path string
+		file *File
+	}
+	var toUpdate []upd
 
+	fm.mu.RLock()
 	for path, file := range fm.Files {
 		if file.NeedsUpdate() {
-			newFile := fm.pluginManager.Process(*file, fm)
-			fm.Files[path] = newFile
+			// capture path and pointer
+			toUpdate = append(toUpdate, upd{path: path, file: file})
 		}
+	}
+	fm.mu.RUnlock()
+
+	// process outside locks (plugin code may be slow)
+	for _, u := range toUpdate {
+		newFile := fm.pluginManager.Process(*u.file, fm)
+		// write back under write lock
+		fm.mu.Lock()
+		fm.Files[u.path] = newFile
+		fm.mu.Unlock()
 	}
 }
 

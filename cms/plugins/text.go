@@ -1,7 +1,8 @@
 package plugins
 
 import (
-	"serve/core"
+	"cms/core"
+	"path"
 	"strings"
 )
 
@@ -28,10 +29,12 @@ func (p *BuiltinTextPlugin) Process(ctx *core.PluginContext) *core.PluginResult 
 	}
 
 	route := strings.TrimPrefix(ctx.File.Path, "content/")
+	route = "/" + strings.TrimLeft(route, "/")
+	route = path.Clean(route)
 
 	return &core.PluginResult{
 		Success:    true,
-		MimeType:   "text/plain",
+		MimeType:   "text/plain; charset=utf-8",
 		NewContent: content,
 		Routes:     []string{route},
 	}

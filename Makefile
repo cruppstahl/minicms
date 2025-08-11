@@ -1,11 +1,11 @@
 TESTOUT=/tmp/test-out
-BIN=serve/serve
+BIN=cms/cms
 
 all: build test
 	true
 
 build:
-	cd serve && go build .
+	cd cms && go build .
 
 test: build
 	rm -rf ${TESTOUT}/*

@@ -1,7 +1,7 @@
 package core
 
 import (
-	"fmt"
+	"path/filepath"
 )
 
 type Context struct {
@@ -17,14 +17,14 @@ func InitializeContext(ctx *Context) error {
 	var err error
 
 	// read config.yaml
-	configFilePath := fmt.Sprintf("%s/config/site.yaml", ctx.Config.SiteDirectory)
+	configFilePath := filepath.Join(ctx.Config.SiteDirectory, "config", "site.yaml")
 	err = ReadConfigYaml(&ctx.Config, configFilePath)
 	if err != nil {
 		return err
 	}
 
 	// read users.yaml
-	authorsFilePath := fmt.Sprintf("%s/config/users.yaml", ctx.Config.SiteDirectory)
+	authorsFilePath := filepath.Join(ctx.Config.SiteDirectory, "config", "users.yaml")
 	ctx.Users, err = ReadUsersYaml(authorsFilePath)
 	if err != nil {
 		return err

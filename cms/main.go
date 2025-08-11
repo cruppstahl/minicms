@@ -1,11 +1,11 @@
 package main
 
 import (
+	"cms/cmd"
+	"cms/core"
+	"cms/plugins"
 	"fmt"
 	"log"
-	"serve/cmd"
-	"serve/core"
-	"serve/plugins"
 )
 
 func initializeAndRunPlugins(ctx *core.Context) error {
@@ -37,14 +37,12 @@ func initializeFileManager(ctx *core.Context) error {
 	// Load the entire "content" directory structure
 	err := fm.WalkDirectory("content")
 	if err != nil {
-		fmt.Printf("Error loading directory: %v\n", err)
 		return err
 	}
 
 	// ... and the layout directory
 	err = fm.WalkDirectory("layout")
 	if err != nil {
-		fmt.Printf("Error loading directory: %v\n", err)
 		return err
 	}
 

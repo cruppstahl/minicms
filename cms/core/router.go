@@ -1,6 +1,8 @@
 package core
 
 import (
+	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -10,11 +12,17 @@ import (
 func makeFileHandler(fm *FileManager, path string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		file := fm.GetFile(path)
-		if file.Metadata.RedirectUrl != "" {
-			c.Redirect(302, file.Metadata.RedirectUrl)
-		} else {
-			c.Data(200, file.Metadata.MimeType, []byte(file.Content))
+		if file == nil {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
 		}
+
+		if file.Metadata.RedirectUrl != "" {
+			c.Redirect(http.StatusFound, file.Metadata.RedirectUrl)
+			return
+		}
+
+		c.Data(http.StatusOK, file.Metadata.MimeType, []byte(file.Content))
 	}
 }
 
@@ -38,7 +46,7 @@ func InitializeRouter(ctx *Context) (*gin.Engine, error) {
 	}
 
 	// Add a static route for the assets
-	staticDir := ctx.Config.SiteDirectory + "/assets"
+	staticDir := filepath.Join(ctx.Config.SiteDirectory, "assets")
 	router.Static("/assets", staticDir)
 
 	return router, nil

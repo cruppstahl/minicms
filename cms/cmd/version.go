@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"cms/core"
 	"fmt"
-	"serve/core"
 )
 
 func Version() {

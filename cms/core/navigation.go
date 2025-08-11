@@ -53,7 +53,7 @@ func readNavigationYaml(path string) (Navigation, error) {
 
 func InitializeNavigation(context *Context) (Navigation, error) {
 	// Read the navigation.yaml file
-	path := fmt.Sprintf("%s/config/navigation.yaml", context.Config.SiteDirectory)
+	path := filepath.Join(context.Config.SiteDirectory, "config", "navigation.yaml")
 	navigation, err := readNavigationYaml(path)
 	if err != nil {
 		return Navigation{}, fmt.Errorf("failed to read navigation.yaml: %w", err)

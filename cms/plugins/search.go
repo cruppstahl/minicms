@@ -1,8 +1,8 @@
 package plugins
 
 import (
+	"cms/core"
 	"path/filepath"
-	"serve/core"
 	"strings"
 	"sync"
 

@@ -1,9 +1,10 @@
 package plugins
 
 import (
+	"cms/core"
 	"log"
+	"path"
 	"path/filepath"
-	"serve/core"
 	"strings"
 
 	"github.com/adrg/frontmatter"
@@ -92,12 +93,14 @@ func (p *BuiltinHtmlPlugin) Process(ctx *core.PluginContext) *core.PluginResult 
 	// A html file has two routes: the path itself (without "/content") and the path without
 	// the extension (e.g. "/about.html" becomes "/about")
 	// If this file is an index page then we also add the directory name as a route
-	filePath := strings.TrimPrefix(ctx.File.Path, "content/")
-	result.Routes = []string{"/" + filePath,
-		"/" + strings.TrimSuffix(filePath, filepath.Ext(filePath))}
-	if filepath.Base(filePath) == "index.html" {
+	route := strings.TrimPrefix(ctx.File.Path, "content/")
+	route = "/" + strings.TrimLeft(route, "/")
+	route = path.Clean(route)
+	result.Routes = []string{route,
+		strings.TrimSuffix(route, filepath.Ext(route))}
+	if filepath.Base(route) == "index.html" {
 		// If this is an index page, add the directory name as a route
-		dir := filepath.Dir(filePath)
+		dir := filepath.Dir(route)
 		if dir == "." {
 			dir = "/"
 		}

@@ -57,6 +57,13 @@
         [x] "dump" generates HTML and metadata and configuration
         [x] 'make test' should run now
 
+    [ ] Perform more thorough reviews and create unittests
+        [ ] FileManager
+        [ ] Config
+        [ ] FsWatcher
+        [ ] Plugin
+        [ ] Router
+
     [ ] Use case: a new file is created
         - Make sure that a route is created!
     [ ] Use case: a file is deleted
@@ -75,7 +82,8 @@
         [ ] Make sure that caching is used correctly (i.e. files not updated
             unless it is necessary)
 
-    [ ] Test redirects
+    [ ] Test the redirects
+    [ ] Create a README with instructions on how to build & run everything
 
 [ ] Add search functionality, with keywords and full text
     [x] Create a plugin interface with the following functions:
@@ -110,5 +118,5 @@
         everywhere else!)
     -> Also, do NOT allow symbolic links! (for security reasons)
 
-[ ] How about a new plugin for builtin/minifier?
+[ ] How about a new plugin to minify the html? (builtin/minifier)
 

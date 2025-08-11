@@ -2,11 +2,11 @@ package plugins
 
 import (
 	"bytes"
+	"cms/core"
 	"log"
+	"path"
 	"path/filepath"
-	"serve/core"
 	"strings"
-	"sync"
 
 	"github.com/adrg/frontmatter"
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
@@ -15,7 +15,6 @@ import (
 )
 
 type BuiltinMarkdownPlugin struct {
-	mu       sync.RWMutex
 	markdown goldmark.Markdown
 	Context  *core.Context
 }
@@ -73,11 +72,8 @@ func (p *BuiltinMarkdownPlugin) Process(ctx *core.PluginContext) *core.PluginRes
 		content = rest
 	}
 
-	// TODO do we need a mutex here?
 	var body []byte
 	var html bytes.Buffer
-	p.mu.Lock()
-	defer p.mu.Unlock()
 	if err := p.markdown.Convert(content, &html); err != nil {
 		return &core.PluginResult{
 			Success: false,
@@ -120,12 +116,14 @@ func (p *BuiltinMarkdownPlugin) Process(ctx *core.PluginContext) *core.PluginRes
 	// A markdown file has two routes: the path itself, with ".html" extension, and the path without
 	// the extension (e.g. "/about.md" becomes "/about.html" and "/about")
 	// If this file is an index page then we also add the directory name as a route
-	filePath := strings.TrimPrefix(ctx.File.Path, "content/")
-	filePath = strings.TrimSuffix(filePath, filepath.Ext(filePath))
-	result.Routes = []string{"/" + filePath, "/" + filePath + ".html"}
-	if filepath.Base(filePath) == "index" {
+	route := strings.TrimPrefix(ctx.File.Path, "content/")
+	route = "/" + strings.TrimLeft(route, "/")
+	route = path.Clean(route)
+	result.Routes = []string{route,
+		strings.TrimSuffix(route, filepath.Ext(route))}
+	if filepath.Base(route) == "index.md" {
 		// If this is an index page, add the directory name as a route
-		dir := filepath.Dir(filePath)
+		dir := filepath.Dir(route)
 		if dir == "." {
 			dir = "/"
 		}

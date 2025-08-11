@@ -1,4 +1,4 @@
-module serve
+module cms
 
 go 1.23
 

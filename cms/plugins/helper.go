@@ -1,13 +1,13 @@
 package plugins
 
 import (
+	"cms/core"
+	"html/template"
 	"log"
 	"os"
 	"path/filepath"
-	"serve/core"
 	"slices"
 	"strings"
-	"text/template"
 )
 
 func ApplyTemplate(body []byte, file *core.File, vars *map[string]interface{}) ([]byte, error) {
