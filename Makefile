@@ -1,7 +1,7 @@
 TESTOUT=/tmp/test-out
 BIN=cms/cms
 
-all: build unittests filetest
+all test: build unittests filetest
 	true
 
 build:
