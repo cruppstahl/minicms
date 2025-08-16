@@ -30,11 +30,11 @@ func TestNewFileManager(t *testing.T) {
 		t.Error("Root directory is nil")
 	}
 
-	if root.Name != "" {
+	if root != nil && root.Name != "" {
 		t.Errorf("Expected root name to be empty, got %s", root.Name)
 	}
 
-	if root.Parent != nil {
+	if root != nil && root.Parent != nil {
 		t.Error("Root should have no parent")
 	}
 }
@@ -397,7 +397,7 @@ func TestFileManagerWalkDirectory(t *testing.T) {
 		t.Error("subdir directory not found")
 	}
 
-	if subdir.Files["sub.txt"] != subFile {
+	if subdir != nil && subdir.Files["sub.txt"] != subFile {
 		t.Error("sub.txt not properly linked to subdirectory")
 	}
 }

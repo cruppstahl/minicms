@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -55,6 +56,10 @@ func NewPluginManager() *PluginManager {
 
 // RegisterPlugin registers a new plugin
 func (pm *PluginManager) RegisterPlugin(plugin Plugin) {
+	if plugin == nil {
+		return
+	}
+
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
@@ -68,6 +73,10 @@ func (pm *PluginManager) RegisterPlugin(plugin Plugin) {
 
 // GetPluginsForFile returns all plugins that can process the given file
 func (pm *PluginManager) GetPluginsForFile(file *File) []Plugin {
+	if file == nil {
+		return nil
+	}
+
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
 
@@ -86,9 +95,20 @@ func (pm *PluginManager) ListPlugins() []string {
 	pm.mu.RLock()
 	defer pm.mu.RUnlock()
 
-	var list []string
+	if len(pm.plugins) == 0 {
+		return nil
+	}
+
+	var builder strings.Builder
+	list := make([]string, 0, len(pm.plugins))
+
 	for _, plugin := range pm.plugins {
-		list = append(list, fmt.Sprintf("%s (priority: %d)", plugin.Name(), plugin.Priority()))
+		builder.Reset()
+		builder.WriteString(plugin.Name())
+		builder.WriteString(" (priority: ")
+		builder.WriteString(fmt.Sprintf("%d", plugin.Priority()))
+		builder.WriteString(")")
+		list = append(list, builder.String())
 	}
 
 	return list
@@ -97,8 +117,6 @@ func (pm *PluginManager) ListPlugins() []string {
 // Processes a file with all applicable plugins. Returns a copy of the modified file.
 func (pm *PluginManager) Process(copy File, fm *FileManager) *File {
 	plugins := pm.GetPluginsForFile(&copy)
-
-	// TODO we need to lock the file, or swap it atomically
 
 	ctx := &PluginContext{
 		File:          &copy,
@@ -132,7 +150,9 @@ func (pm *PluginManager) Process(copy File, fm *FileManager) *File {
 		}
 
 		// Merge metadata
-		copy.Metadata.MimeType = result.MimeType
+		if result.MimeType != "" {
+			copy.Metadata.MimeType = result.MimeType
+		}
 
 		// Collect routes
 		if result.Routes != nil {

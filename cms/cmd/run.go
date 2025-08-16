@@ -35,13 +35,14 @@ func Run(ctx *core.Context) {
 	defer ctx.FileWatcher.Stop()
 
 	// Set up the routes
-	router, err := core.InitializeRouter(ctx)
+	rm := core.NewRouterManager()
+	err = rm.InitializeRouter(ctx)
 	if err != nil {
 		log.Fatalf("Failed to set up routes: %v", err)
 	}
 
 	// Then run the server
-	err = router.Run(":" + strconv.Itoa(ctx.Config.Server.Port))
+	err = rm.GetRouter().Run(":" + strconv.Itoa(ctx.Config.Server.Port))
 	if err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}

@@ -57,12 +57,17 @@
         [x] "dump" generates HTML and metadata and configuration
         [x] 'make test' should run now
 
-    [ ] Perform more thorough reviews and create unittests
-        [ ] FileManager
-        [ ] Config
-        [ ] FsWatcher
-        [ ] Plugin
-        [ ] Router
+    [x] Perform more thorough reviews and create unittests
+        [x] FileManager
+        [x] Config
+        [x] Plugin
+        [x] Router
+        [x] FsWatcher
+
+    [x] make test should run unittests; also, it is currently flaky
+        (IsActive flag is set randomly)
+    [x] Add a MIT license file
+    [x] Create a README with instructions on how to build & run everything
 
     [ ] Use case: a new file is created
         - Make sure that a route is created!
@@ -81,9 +86,6 @@
         [ ] Test against race conditions (how?)
         [ ] Make sure that caching is used correctly (i.e. files not updated
             unless it is necessary)
-
-    [ ] Test the redirects
-    [ ] Create a README with instructions on how to build & run everything
 
 [ ] Add search functionality, with keywords and full text
     [x] Create a plugin interface with the following functions:
@@ -107,6 +109,12 @@
 [ ] Support custom 404 page (/content/404.\*), including metadata
     [ ] Add one to crupp.de
     [ ] Add this as a test
+
+[ ] For runtime errors, show stack traces and debug info in the browser
+    - only for DEBUG builds!
+    - what should we do for non-debug builds? Silently ignore the errors
+        and just log them? but then it would be tricky to detect them, so
+        better scream loud!
 
 [ ] Verify that the navigation can link to completely different directories
     (e.g. blog and documentation are maintained by different teams, and

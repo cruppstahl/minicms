@@ -1,13 +1,16 @@
 TESTOUT=/tmp/test-out
 BIN=cms/cms
 
-all: build test
+all: build unittests filetest
 	true
 
 build:
 	cd cms && go build .
 
-test: build
+unittests: build
+	cd cms/core && go test
+
+filetest: unittests build
 	rm -rf ${TESTOUT}/*
 	mkdir -p ${TESTOUT}
 	${BIN} dump templates/business-card-01 --out=${TESTOUT}/business-card-01

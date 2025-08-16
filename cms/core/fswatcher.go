@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -15,13 +16,15 @@ import (
 // FileWatcher watches filesystem changes and updates the FileManager accordingly
 type FileWatcher struct {
 	mu          sync.RWMutex
-	fileManager *FileManager
+	fm          *FileManager
 	watcher     *fsnotify.Watcher
 	watchedDirs map[string]bool // Track which directories are being watched
 	rootPath    string          // Root path being watched
 	running     bool
-	stopChan    chan struct{}
+	ctx         context.Context
+	cancel      context.CancelFunc
 	eventChan   chan FileWatchEvent
+	wg          sync.WaitGroup
 }
 
 // FileWatchEventType represents the type of file system event
@@ -36,6 +39,26 @@ const (
 	DirDeleted
 )
 
+// String returns a string representation of the event type
+func (t FileWatchEventType) String() string {
+	switch t {
+	case FileCreated:
+		return "FileCreated"
+	case FileModified:
+		return "FileModified"
+	case FileDeleted:
+		return "FileDeleted"
+	case FileRenamed:
+		return "FileRenamed"
+	case DirCreated:
+		return "DirCreated"
+	case DirDeleted:
+		return "DirDeleted"
+	default:
+		return "Unknown"
+	}
+}
+
 // FileWatchEvent represents a file system change event
 type FileWatchEvent struct {
 	Type    FileWatchEventType
@@ -45,29 +68,40 @@ type FileWatchEvent struct {
 	Time    time.Time
 }
 
-// FileWatchSubscriber interface for receiving file watch events
+// interface for receiving file watch events
 type FileWatchSubscriber interface {
 	OnFileEvent(event FileWatchEvent)
 }
 
-// NewFileWatcher creates a new file watcher
+// Creates a new file watcher
 func NewFileWatcher(fm *FileManager) (*FileWatcher, error) {
+	if fm == nil {
+		return nil, fmt.Errorf("file manager cannot be nil")
+	}
+
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create fsnotify watcher: %w", err)
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+
 	return &FileWatcher{
-		fileManager: fm,
+		fm:          fm,
 		watcher:     watcher,
 		watchedDirs: make(map[string]bool),
-		stopChan:    make(chan struct{}),
+		ctx:         ctx,
+		cancel:      cancel,
 		eventChan:   make(chan FileWatchEvent, 100),
 	}, nil
 }
 
 // Returns true if a path should be ignored (hidden files, symlinks, etc.)
 func IgnoreFile(path string, info os.FileInfo) bool {
+	if info == nil {
+		return true
+	}
+
 	// Get the base name
 	baseName := filepath.Base(path)
 
@@ -82,34 +116,40 @@ func IgnoreFile(path string, info os.FileInfo) bool {
 	}
 
 	// Avoid .bak, .tmp, and other temporary files
-	if strings.HasSuffix(baseName, ".bak") || strings.HasSuffix(baseName, ".tmp") ||
-		strings.HasSuffix(baseName, "~") || strings.HasSuffix(baseName, ".swp") {
-		return true
+	tmpSuffixes := []string{".bak", ".tmp", "~", ".swp", ".lock"}
+	for _, suffix := range tmpSuffixes {
+		if strings.HasSuffix(baseName, suffix) {
+			return true
+		}
 	}
 
 	return false
 }
 
-// getRelativePath converts absolute path to relative path from root
+// Converts absolute path to relative path from root
 func (fw *FileWatcher) getRelativePath(absPath string) (string, error) {
+	if fw.rootPath == "" {
+		return "", fmt.Errorf("root path not set")
+	}
 	return filepath.Rel(fw.rootPath, absPath)
 }
 
-// addDirectoryWatch adds a directory to the watcher recursively
+// Adds a directory to the watcher recursively
 func (fw *FileWatcher) addDirectoryWatch(dirPath string) error {
 	return filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return err
+			// Log the error but continue processing other files
+			log.Printf("Error walking path %s: %v", path, err)
+			return nil
 		}
 
 		if info.IsDir() && !IgnoreFile(path, info) {
-			// TODO review if we require a mutex here!
-			err := fw.watcher.Add(path)
-			if err != nil {
+			if err := fw.watcher.Add(path); err != nil {
 				log.Printf("Failed to watch directory %s: %v", path, err)
-				return err
+				return nil // Continue processing other directories
 			}
 
+			// Properly lock when updating watchedDirs
 			fw.mu.Lock()
 			fw.watchedDirs[path] = true
 			fw.mu.Unlock()
@@ -121,8 +161,7 @@ func (fw *FileWatcher) addDirectoryWatch(dirPath string) error {
 	})
 }
 
-// removeDirectoryWatch removes a directory from the watcher
-/*
+// Removes a directory from the watcher
 func (fw *FileWatcher) removeDirectoryWatch(dirPath string) {
 	fw.mu.Lock()
 	defer fw.mu.Unlock()
@@ -130,66 +169,20 @@ func (fw *FileWatcher) removeDirectoryWatch(dirPath string) {
 	// Remove the directory and all subdirectories from watcher
 	for watchedDir := range fw.watchedDirs {
 		if strings.HasPrefix(watchedDir, dirPath) {
-			fw.watcher.Remove(watchedDir)
+			if err := fw.watcher.Remove(watchedDir); err != nil {
+				log.Printf("Failed to remove watcher for %s: %v", watchedDir, err)
+			}
 			delete(fw.watchedDirs, watchedDir)
 			log.Printf("Stopped watching directory: %s", watchedDir)
 		}
 	}
-}*/
+}
 
-// handleFileCreated handles file creation events
-/*
-func (fw *FileWatcher) handleFileCreated(path string) {
-	info, err := os.Stat(path)
-	if err != nil {
-		log.Printf("Failed to stat created file %s: %v", path, err)
-		return
-	}
-
-	if fw.shouldIgnore(path, info) {
-		return
-	}
-
-	relPath, err := fw.getRelativePath(path)
-	if err != nil {
-		log.Printf("Failed to get relative path for %s: %v", path, err)
-		return
-	}
-
-	if info.IsDir() {
-		// Add new directory to watcher
-		fw.addDirectoryWatch(path)
-
-		// Notify subscribers
-		event := FileWatchEvent{
-			Type:  DirCreated,
-			Path:  relPath,
-			IsDir: true,
-			Time:  time.Now(),
-		}
-		fw.eventChan <- event
-	} else {
-		file := fw.fileManager.AddFile(relPath)
-
-		// Process the new file with plugins
-		fw.fileManager.GetPluginManager().Process(file, fw.fileManager)
-		log.Printf("Processed new file %s", relPath)
-
-		// Notify subscribers
-		event := FileWatchEvent{
-			Type:  FileCreated,
-			Path:  relPath,
-			IsDir: false,
-			Time:  time.Now(),
-		}
-		fw.eventChan <- event
-	}
-}*/
-
-// handleFileModified handles file modification events
+// Handle file modification events
 func (fw *FileWatcher) handleFileModified(path string) {
 	info, err := os.Stat(path)
 	if err != nil {
+		// File might have been deleted between event and stat
 		log.Printf("Failed to stat modified file %s: %v", path, err)
 		return
 	}
@@ -205,146 +198,44 @@ func (fw *FileWatcher) handleFileModified(path string) {
 	}
 
 	// Update file in FileManager
-	file := fw.fileManager.AddFile(relPath)
+	file := fw.fm.AddFile(relPath)
 
 	// Mark file and its dependents for update
 	file.MarkForUpdate()
 
 	// Update all files that need to be reprocessed
-	fw.fileManager.ProcessUpdatedFiles()
+	fw.fm.ProcessUpdatedFiles()
 
-	// Notify subscribers
+	// Send event to subscribers
 	event := FileWatchEvent{
 		Type:  FileModified,
 		Path:  relPath,
 		IsDir: false,
 		Time:  time.Now(),
 	}
-	fw.eventChan <- event
+
+	select {
+	case fw.eventChan <- event:
+	case <-fw.ctx.Done():
+		return
+	default:
+		log.Printf("Event channel full, dropping event for %s", relPath)
+	}
 }
 
-// handleFileDeleted handles file deletion events
-/*
-func (fw *FileWatcher) handleFileDeleted(path string) {
-	relPath, err := fw.getRelativePath(path)
-	if err != nil {
-		log.Printf("Failed to get relative path for %s: %v", path, err)
-		return
-	}
-
-	// Check if it was a file or directory in our FileManager
-	file := fw.fileManager.GetFile(relPath)
-	dir := fw.fileManager.GetDirectory(relPath)
-
-	if file != nil {
-		// Remove file from FileManager
-		fw.removeFileFromManager(relPath)
-
-		// Notify subscribers
-		event := FileWatchEvent{
-			Type:  FileDeleted,
-			Path:  relPath,
-			IsDir: false,
-			Time:  time.Now(),
-		}
-		fw.eventChan <- event
-
-		log.Printf("Removed deleted file %s from FileManager", relPath)
-	} else if dir != nil {
-		// Remove directory and all its files from FileManager
-		fw.removeDirectoryFromManager(relPath)
-
-		// Remove from file watcher
-		fw.removeDirectoryWatch(path)
-
-		// Notify subscribers
-		event := FileWatchEvent{
-			Type:  DirDeleted,
-			Path:  relPath,
-			IsDir: true,
-			Time:  time.Now(),
-		}
-		fw.eventChan <- event
-
-		log.Printf("Removed deleted directory %s from FileManager", relPath)
-	}
-}*/
-
-// removeFileFromManager removes a file from the FileManager
-/*
-func (fw *FileWatcher) removeFileFromManager(relPath string) {
-	fw.fileManager.mu.Lock()
-	defer fw.fileManager.mu.Unlock()
-
-	file := fw.fileManager.Files[relPath]
-	if file == nil {
-		return
-	}
-
-	// Remove from parent directory
-	if file.Parent != nil {
-		delete(file.Parent.Files, file.Name)
-	}
-
-	// Remove all dependency relationships
-	for depPath := range file.Dependencies {
-		if dep := fw.fileManager.Files[depPath]; dep != nil {
-			delete(dep.Dependents, relPath)
-		}
-	}
-
-	for depPath := range file.Dependents {
-		if dep := fw.fileManager.Files[depPath]; dep != nil {
-			delete(dep.Dependencies, relPath)
-		}
-	}
-
-	// Remove from global files map
-	delete(fw.fileManager.Files, relPath)
-}*/
-
-// removeDirectoryFromManager removes a directory and all its contents from FileManager
-/*
-func (fw *FileWatcher) removeDirectoryFromManager(relPath string) {
-	fw.fileManager.mu.Lock()
-	defer fw.fileManager.mu.Unlock()
-
-	// Find all files that start with this directory path
-	var filesToRemove []string
-	for filePath := range fw.fileManager.Files {
-		if strings.HasPrefix(filePath, relPath+"/") || filePath == relPath {
-			filesToRemove = append(filesToRemove, filePath)
-		}
-	}
-
-	// Remove all files in the directory
-	for _, filePath := range filesToRemove {
-		if file := fw.fileManager.Files[filePath]; file != nil {
-			// Remove dependency relationships
-			for depPath := range file.Dependencies {
-				if dep := fw.fileManager.Files[depPath]; dep != nil {
-					delete(dep.Dependents, filePath)
-				}
-			}
-
-			for depPath := range file.Dependents {
-				if dep := fw.fileManager.Files[depPath]; dep != nil {
-					delete(dep.Dependencies, filePath)
-				}
-			}
-
-			delete(fw.fileManager.Files, filePath)
-		}
-	}
-
-	// Remove directory from hierarchy (simplified - would need recursive removal)
-	if dir := fw.fileManager.findDirectory(filepath.Dir(relPath)); dir != nil {
-		delete(dir.Subdirs, filepath.Base(relPath))
-	}
-}*/
-
-// Start starts the file watcher
+// Starts the file watcher
 func (fw *FileWatcher) Start(rootPath string) error {
+	if rootPath == "" {
+		return fmt.Errorf("root path cannot be empty")
+	}
+
+	// Check if path exists and is a directory
+	if info, err := os.Stat(rootPath); err != nil {
+		return fmt.Errorf("failed to access root path %s: %w", rootPath, err)
+	} else if !info.IsDir() {
+		return fmt.Errorf("root path %s is not a directory", rootPath)
+	}
+
 	fw.mu.Lock()
 	if fw.running {
 		fw.mu.Unlock()
@@ -355,19 +246,22 @@ func (fw *FileWatcher) Start(rootPath string) error {
 	fw.mu.Unlock()
 
 	// Add initial directory watches
-	err := fw.addDirectoryWatch(rootPath)
-	if err != nil {
+	if err := fw.addDirectoryWatch(rootPath); err != nil {
+		fw.mu.Lock()
+		fw.running = false
+		fw.mu.Unlock()
 		return fmt.Errorf("failed to add initial directory watches: %w", err)
 	}
 
-	// Start event processing goroutines
+	// Start event processing goroutine
+	fw.wg.Add(1)
 	go fw.processWatcherEvents()
 
 	log.Printf("FileWatcher started, watching: %s", rootPath)
 	return nil
 }
 
-// Stop stops the file watcher
+// Stops the file watcher
 func (fw *FileWatcher) Stop() error {
 	fw.mu.Lock()
 	if !fw.running {
@@ -377,19 +271,28 @@ func (fw *FileWatcher) Stop() error {
 	fw.running = false
 	fw.mu.Unlock()
 
-	// Stop the watcher
-	close(fw.stopChan)
+	// Cancel context to signal shutdown
+	fw.cancel()
+
+	// Close the watcher
 	err := fw.watcher.Close()
+
+	// Wait for goroutines to finish
+	fw.wg.Wait()
+
+	// Close event channel
+	close(fw.eventChan)
 
 	log.Printf("FileWatcher stopped")
 	return err
 }
 
-// processWatcherEvents processes fsnotify events
 func (fw *FileWatcher) processWatcherEvents() {
+	defer fw.wg.Done()
+
 	for {
 		select {
-		case <-fw.stopChan:
+		case <-fw.ctx.Done():
 			return
 		case event, ok := <-fw.watcher.Events:
 			if !ok {
@@ -398,14 +301,17 @@ func (fw *FileWatcher) processWatcherEvents() {
 
 			// Handle different event types
 			switch {
-			// case event.Op&fsnotify.Create == fsnotify.Create:
-			// fw.handleFileCreated(event.Name)
 			case event.Op&fsnotify.Write == fsnotify.Write:
 				fw.handleFileModified(event.Name)
-				// case event.Op&fsnotify.Remove == fsnotify.Remove:
-				// fw.handleFileDeleted(event.Name)
-				// case event.Op&fsnotify.Rename == fsnotify.Rename:
-				// fw.handleFileDeleted(event.Name) // Treat rename as delete for now
+			case event.Op&fsnotify.Create == fsnotify.Create:
+				// Handle file/directory creation
+				fw.handleFileCreated(event.Name)
+			case event.Op&fsnotify.Remove == fsnotify.Remove:
+				// Handle file/directory deletion
+				fw.handleFileDeleted(event.Name)
+			case event.Op&fsnotify.Rename == fsnotify.Rename:
+				// Handle rename as deletion for now
+				fw.handleFileDeleted(event.Name)
 			}
 
 		case err, ok := <-fw.watcher.Errors:
@@ -417,9 +323,134 @@ func (fw *FileWatcher) processWatcherEvents() {
 	}
 }
 
-// IsRunning returns whether the file watcher is currently running
+// handles file creation events
+func (fw *FileWatcher) handleFileCreated(path string) {
+	info, err := os.Stat(path)
+	if err != nil {
+		log.Printf("Failed to stat created file %s: %v", path, err)
+		return
+	}
+
+	if IgnoreFile(path, info) {
+		return
+	}
+
+	relPath, err := fw.getRelativePath(path)
+	if err != nil {
+		log.Printf("Failed to get relative path for %s: %v", path, err)
+		return
+	}
+
+	if info.IsDir() {
+		// Add new directory to watcher
+		if err := fw.addDirectoryWatch(path); err != nil {
+			log.Printf("Failed to watch new directory %s: %v", path, err)
+		}
+
+		// Send event
+		event := FileWatchEvent{
+			Type:  DirCreated,
+			Path:  relPath,
+			IsDir: true,
+			Time:  time.Now(),
+		}
+		fw.sendEvent(event)
+	} else {
+		// Add file to FileManager
+		file := fw.fm.AddFile(relPath)
+		if file != nil {
+			// Process (a copy of the) new file with plugins
+			fw.fm.GetPluginManager().Process(*file, fw.fm)
+			log.Printf("Processed new file %s", relPath)
+		}
+
+		// Send event
+		event := FileWatchEvent{
+			Type:  FileCreated,
+			Path:  relPath,
+			IsDir: false,
+			Time:  time.Now(),
+		}
+		fw.sendEvent(event)
+	}
+}
+
+// handles file deletion events
+func (fw *FileWatcher) handleFileDeleted(path string) {
+	relPath, err := fw.getRelativePath(path)
+	if err != nil {
+		log.Printf("Failed to get relative path for %s: %v", path, err)
+		return
+	}
+
+	// Check if it was a directory by checking if we were watching it
+	fw.mu.RLock()
+	wasDir := fw.watchedDirs[path]
+	fw.mu.RUnlock()
+
+	if wasDir {
+		// Remove directory from watcher
+		fw.removeDirectoryWatch(path)
+
+		// Send event
+		event := FileWatchEvent{
+			Type:  DirDeleted,
+			Path:  relPath,
+			IsDir: true,
+			Time:  time.Now(),
+		}
+		fw.sendEvent(event)
+
+		log.Printf("Removed deleted directory %s from FileManager", relPath)
+	} else {
+		// Handle as file deletion
+		// Check if file exists in FileManager
+		if fw.fm.GetFile(relPath) != nil {
+			// Send event
+			event := FileWatchEvent{
+				Type:  FileDeleted,
+				Path:  relPath,
+				IsDir: false,
+				Time:  time.Now(),
+			}
+			fw.sendEvent(event)
+
+			log.Printf("File deleted: %s", relPath)
+		}
+	}
+}
+
+// sends an event to the event channel with proper context handling
+func (fw *FileWatcher) sendEvent(event FileWatchEvent) {
+	select {
+	case fw.eventChan <- event:
+	case <-fw.ctx.Done():
+		return
+	default:
+		log.Printf("Event channel full, dropping event for %s", event.Path)
+	}
+}
+
+// returns whether the file watcher is currently running
 func (fw *FileWatcher) IsRunning() bool {
 	fw.mu.RLock()
 	defer fw.mu.RUnlock()
 	return fw.running
+}
+
+// returns the event channel for subscribers
+func (fw *FileWatcher) GetEventChannel() <-chan FileWatchEvent {
+	return fw.eventChan
+}
+
+// returns a copy of currently watched directories
+func (fw *FileWatcher) GetWatchedDirectories() []string {
+	fw.mu.RLock()
+	defer fw.mu.RUnlock()
+
+	dirs := make([]string, 0, len(fw.watchedDirs))
+	for dir := range fw.watchedDirs {
+		dirs = append(dirs, dir)
+	}
+	return dirs
 }

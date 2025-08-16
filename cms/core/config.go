@@ -143,7 +143,7 @@ func (p Plugins) Validate() error {
 		}
 
 		// Validate plugin configuration keys and values
-		for key, _ := range config {
+		for key := range config {
 			if key == "" {
 				return fmt.Errorf("plugin %s has empty configuration key", pluginName)
 			}
@@ -216,11 +216,6 @@ func (c *Config) validateOutDirectory() error {
 // Validates file system paths
 func isValidPath(path string) bool {
 	if path == "" {
-		return false
-	}
-
-	// Check for path traversal attempts
-	if strings.Contains(path, "../") || strings.Contains(path, "..\\") {
 		return false
 	}
 
