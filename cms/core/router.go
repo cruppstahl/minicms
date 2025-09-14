@@ -44,12 +44,17 @@ func (rm *RouterManager) AddMiddleware(middleware ...gin.HandlerFunc) {
 // creates a handler function for a specific file path
 func (rm *RouterManager) makeFileHandler(filePath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if rm.fm == nil {
+		// Get FileManager with read lock to ensure it's not nil
+		rm.mu.RLock()
+		fm := rm.fm
+		rm.mu.RUnlock()
+
+		if fm == nil {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 
-		file := rm.fm.GetFile(filePath)
+		file := fm.GetFile(filePath)
 		if file == nil {
 			c.AbortWithStatus(http.StatusNotFound)
 			return
@@ -121,20 +126,8 @@ func (rm *RouterManager) InitializeRouter(ctx *Context) error {
 			continue
 		}
 
-		for _, route := range file.Routes {
-			normalizedRoute, err := normalizeRoute(route)
-			if err != nil {
-				continue // Skip invalid routes
-			}
-
-			// Skip duplicates during initialization
-			if _, exists := rm.routes[normalizedRoute]; exists {
-				continue
-			}
-
-			rm.routes[normalizedRoute] = file.Path
-			rm.router.GET(normalizedRoute, rm.makeFileHandler(file.Path))
-		}
+		// Call addFileUnsafe since we already hold the lock
+		rm.addFileUnsafe(file)
 	}
 
 	// Add static file serving for assets
@@ -165,6 +158,31 @@ func (rm *RouterManager) AddRoute(pattern, filePath string) error {
 	return nil
 }
 
+// AddFile is now thread-safe
+func (rm *RouterManager) AddFile(file *File) {
+	rm.mu.Lock()
+	defer rm.mu.Unlock()
+	rm.addFileUnsafe(file)
+}
+
+// addFileUnsafe is the internal implementation that assumes the lock is already held
+func (rm *RouterManager) addFileUnsafe(file *File) {
+	for _, route := range file.Routes {
+		normalizedRoute, err := normalizeRoute(route)
+		if err != nil {
+			continue // Skip invalid routes
+		}
+
+		// Skip duplicates
+		if _, exists := rm.routes[normalizedRoute]; exists {
+			continue
+		}
+
+		rm.routes[normalizedRoute] = file.Path
+		rm.router.GET(normalizedRoute, rm.makeFileHandler(file.Path))
+	}
+}
+
 func (rm *RouterManager) RemoveRoute(pattern string) error {
 	normalizedPattern, err := normalizeRoute(pattern)
 	if err != nil {
@@ -187,13 +205,52 @@ func (rm *RouterManager) RemoveRoute(pattern string) error {
 	// For now, we'll just remove from our tracking map.
 	// The route will still exist in gin but won't be in our management system.
 
-	return rm.rebuildRouter()
+	return rm.rebuildRouterUnsafe()
 }
 
-// rebuildRouter recreates the router with current routes
-func (rm *RouterManager) rebuildRouter() error {
-	// Store current routes
-	currentRoutes := make(map[string]string)
+// RemoveFile removes all routes associated with a file
+func (rm *RouterManager) RemoveFile(filePath string) error {
+	rm.mu.Lock()
+	defer rm.mu.Unlock()
+
+	// Find all routes that map to this file
+	var routesToRemove []string
+	for pattern, fp := range rm.routes {
+		if fp == filePath {
+			routesToRemove = append(routesToRemove, pattern)
+		}
+	}
+
+	if len(routesToRemove) == 0 {
+		return fmt.Errorf("no routes found for file %s", filePath)
+	}
+
+	// Remove all found routes
+	for _, pattern := range routesToRemove {
+		delete(rm.routes, pattern)
+	}
+
+	return rm.rebuildRouterUnsafe()
+}
+
+// GetAllRoutes returns a copy of all current routes (thread-safe)
+func (rm *RouterManager) GetAllRoutes() map[string]string {
+	rm.mu.RLock()
+	defer rm.mu.RUnlock()
+
+	// Return a copy to prevent external modifications
+	routes := make(map[string]string, len(rm.routes))
+	for pattern, filePath := range rm.routes {
+		routes[pattern] = filePath
+	}
+	return routes
+}
+
+// rebuildRouterUnsafe recreates the router with current routes
+// This method assumes the caller already holds the write lock
+func (rm *RouterManager) rebuildRouterUnsafe() error {
+	// Store current routes (we already have the lock, so this is safe)
+	currentRoutes := make(map[string]string, len(rm.routes))
 	for pattern, filePath := range rm.routes {
 		currentRoutes[pattern] = filePath
 	}
@@ -216,11 +273,20 @@ func (rm *RouterManager) rebuildRouter() error {
 	}
 
 	// Add static file serving for assets
-	staticDir := filepath.Join(rm.ctx.Config.SiteDirectory, "assets")
-	newRouter.Static("/assets", staticDir)
+	if rm.ctx != nil {
+		staticDir := filepath.Join(rm.ctx.Config.SiteDirectory, "assets")
+		newRouter.Static("/assets", staticDir)
+	}
 
 	rm.router = newRouter
 	return nil
+}
+
+// rebuildRouter is the public version that acquires the lock
+func (rm *RouterManager) rebuildRouter() error {
+	rm.mu.Lock()
+	defer rm.mu.Unlock()
+	return rm.rebuildRouterUnsafe()
 }
 
 func (rm *RouterManager) GetRouteInfo(pattern string) (*RouteInfo, error) {
@@ -244,8 +310,29 @@ func (rm *RouterManager) GetRouteInfo(pattern string) (*RouteInfo, error) {
 	}, nil
 }
 
+// GetRouter returns the current router (thread-safe)
 func (rm *RouterManager) GetRouter() *gin.Engine {
 	rm.mu.RLock()
 	defer rm.mu.RUnlock()
 	return rm.router
+}
+
+// RouteExists checks if a route pattern exists (thread-safe)
+func (rm *RouterManager) RouteExists(pattern string) bool {
+	normalizedPattern, err := normalizeRoute(pattern)
+	if err != nil {
+		return false
+	}
+
+	rm.mu.RLock()
+	defer rm.mu.RUnlock()
+	_, exists := rm.routes[normalizedPattern]
+	return exists
+}
+
+// GetRouteCount returns the number of registered routes (thread-safe)
+func (rm *RouterManager) GetRouteCount() int {
+	rm.mu.RLock()
+	defer rm.mu.RUnlock()
+	return len(rm.routes)
 }

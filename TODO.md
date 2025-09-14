@@ -69,14 +69,16 @@
     [x] Add a MIT license file
     [x] Create a README with instructions on how to build & run everything
 
-    [ ] Use case: a new file is created
+    [x] Use case: a new file is created
         - Make sure that a route is created!
-    [ ] Use case: a file is deleted
+    [x] Use case: a file is deleted
         - Make sure that the route is deleted!
     [ ] Use case: a new directory is created
         - Make sure that all routes are created!
+        - Update the watcher as well
     [ ] Use case: a directory is deleted
         - Make sure that all routes are deleted!
+        - Update the watcher as well
 
     [ ] Add more tests about file graph, hierarchy, metadata, plugins, router
         [ ] Systematically add/remove/update files and whole directories

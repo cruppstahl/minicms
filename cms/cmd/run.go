@@ -41,6 +41,8 @@ func Run(ctx *core.Context) {
 		log.Fatalf("Failed to set up routes: %v", err)
 	}
 
+	ctx.FileWatcher.SetRouter(rm)
+
 	// Then run the server
 	err = rm.GetRouter().Run(":" + strconv.Itoa(ctx.Config.Server.Port))
 	if err != nil {

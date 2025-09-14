@@ -332,6 +332,48 @@ func (fm *FileManager) AddFile(path string) *File {
 	return file
 }
 
+// Removes a file from the manager (thread-safe)
+func (fm *FileManager) RemoveFile(path string) {
+	file := fm.GetFile(path)
+	if file == nil {
+		return // File doesn't exist
+	}
+
+	fm.mu.Lock()
+	defer fm.mu.Unlock()
+
+	// Clean the path
+	cleanPath := filepath.Clean(path)
+	fileName := filepath.Base(cleanPath)
+	dirPath := filepath.Dir(cleanPath)
+
+	// Find the parent directory (must already exist)
+	var parentDir *Directory
+	if dirPath == "." || dirPath == "" {
+		parentDir = fm.root
+	} else {
+		parentDir = fm.findDirectory(dirPath)
+		if parentDir == nil {
+			// This shouldn't happen if WalkDirectory was used properly
+			panic(fmt.Sprintf("parent directory %s does not exist for file %s", dirPath, cleanPath))
+		}
+	}
+
+	// Check if file exists
+	_, exists := fm.Files[cleanPath]
+	if exists {
+		delete(fm.Files, cleanPath)
+		delete(parentDir.Files, fileName)
+	}
+
+	// Remove this file from dependencies of other files, and mark them all for update
+	file.MarkForUpdate()
+	for _, f := range fm.Files {
+		delete(f.Dependencies, cleanPath)
+		delete(f.Dependents, cleanPath)
+	}
+}
+
 // GetFile returns a file by its full path (thread-safe)
 func (fm *FileManager) GetFile(path string) *File {
 	fm.mu.RLock()

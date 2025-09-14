@@ -16,6 +16,7 @@ import (
 // FileWatcher watches filesystem changes and updates the FileManager accordingly
 type FileWatcher struct {
 	mu          sync.RWMutex
+	rm          *RouterManager
 	fm          *FileManager
 	watcher     *fsnotify.Watcher
 	watchedDirs map[string]bool // Track which directories are being watched
@@ -94,6 +95,10 @@ func NewFileWatcher(fm *FileManager) (*FileWatcher, error) {
 		cancel:      cancel,
 		eventChan:   make(chan FileWatchEvent, 100),
 	}, nil
+}
+
+func (fw *FileWatcher) SetRouter(rm *RouterManager) {
+	fw.rm = rm
 }
 
 // Returns true if a path should be ignored (hidden files, symlinks, etc.)
@@ -358,9 +363,16 @@ func (fw *FileWatcher) handleFileCreated(path string) {
 	} else {
 		// Add file to FileManager
 		file := fw.fm.AddFile(relPath)
+
 		if file != nil {
 			// Process (a copy of the) new file with plugins
-			fw.fm.GetPluginManager().Process(*file, fw.fm)
+			file = fw.fm.GetPluginManager().Process(*file, fw.fm)
+
+			// If it's in the content directory, add a route
+			if strings.HasPrefix(file.Path, "content/") {
+				fw.rm.AddFile(file)
+			}
+
 			log.Printf("Processed new file %s", relPath)
 		}
 
@@ -403,9 +415,14 @@ func (fw *FileWatcher) handleFileDeleted(path string) {
 
 		log.Printf("Removed deleted directory %s from FileManager", relPath)
 	} else {
-		// Handle as file deletion
-		// Check if file exists in FileManager
-		if fw.fm.GetFile(relPath) != nil {
+		// Remove file from FileManager
+		fw.fm.RemoveFile(relPath)
+
+		// Also remove from RouterManager
+		fw.rm.RemoveFile(relPath)
+
+		// Check if file exists - it should not
+		if fw.fm.GetFile(relPath) == nil {
 			// Send event
 			event := FileWatchEvent{
 				Type:  FileDeleted,
@@ -417,6 +434,9 @@ func (fw *FileWatcher) handleFileDeleted(path string) {
 
 			log.Printf("File deleted: %s", relPath)
 		}
+
+		// Update all files that need to be reprocessed
+		fw.fm.ProcessUpdatedFiles()
 	}
 }
 
