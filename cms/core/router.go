@@ -103,38 +103,11 @@ func (rm *RouterManager) InitializeRouter(ctx *Context) error {
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
 
-	// Create new router
-	rm.router = gin.New()
 	rm.fm = ctx.FileManager
 	rm.ctx = ctx
 
-	// Add default middleware
-	rm.router.Use(gin.Logger())
-	rm.router.Use(gin.Recovery())
-
-	// Add custom middleware
-	for _, middleware := range rm.middleware {
-		rm.router.Use(middleware)
-	}
-
-	// Clear existing routes map
-	rm.routes = make(map[string]string)
-
-	// Set up routes for files in content directory
-	for _, file := range ctx.FileManager.GetAllFiles() {
-		if !strings.HasPrefix(file.Path, "content/") {
-			continue
-		}
-
-		// Call addFileUnsafe since we already hold the lock
-		rm.addFileUnsafe(file)
-	}
-
-	// Add static file serving for assets
-	staticDir := filepath.Join(ctx.Config.SiteDirectory, "assets")
-	rm.router.Static("/assets", staticDir)
-
-	return nil
+	// Create new router
+	return rm.rebuildRouterUnsafe()
 }
 
 func (rm *RouterManager) AddRoute(pattern, filePath string) error {
@@ -249,11 +222,8 @@ func (rm *RouterManager) GetAllRoutes() map[string]string {
 // rebuildRouterUnsafe recreates the router with current routes
 // This method assumes the caller already holds the write lock
 func (rm *RouterManager) rebuildRouterUnsafe() error {
-	// Store current routes (we already have the lock, so this is safe)
-	currentRoutes := make(map[string]string, len(rm.routes))
-	for pattern, filePath := range rm.routes {
-		currentRoutes[pattern] = filePath
-	}
+	// Clear existing routes map
+	rm.routes = make(map[string]string)
 
 	// Initialize fresh router
 	newRouter := gin.New()
@@ -267,23 +237,30 @@ func (rm *RouterManager) rebuildRouterUnsafe() error {
 		newRouter.Use(middleware)
 	}
 
-	// Re-add all current routes
-	for pattern, filePath := range currentRoutes {
-		newRouter.GET(pattern, rm.makeFileHandler(filePath))
+	// Set the router immediately so addFileUnsafe can use it
+	rm.router = newRouter
+
+	// Set up routes for files in content directory
+	for _, file := range rm.ctx.FileManager.GetAllFiles() {
+		if !strings.HasPrefix(file.Path, "content/") {
+			continue
+		}
+
+		// Call addFileUnsafe since we already hold the lock
+		rm.addFileUnsafe(file)
 	}
 
 	// Add static file serving for assets
 	if rm.ctx != nil {
 		staticDir := filepath.Join(rm.ctx.Config.SiteDirectory, "assets")
-		newRouter.Static("/assets", staticDir)
+		rm.router.Static("/assets", staticDir)
 	}
 
-	rm.router = newRouter
 	return nil
 }
 
 // rebuildRouter is the public version that acquires the lock
-func (rm *RouterManager) rebuildRouter() error {
+func (rm *RouterManager) RebuildRouter() error {
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
 	return rm.rebuildRouterUnsafe()

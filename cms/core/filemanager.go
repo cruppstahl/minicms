@@ -291,6 +291,41 @@ func (fm *FileManager) WalkDirectory(rootPath string) error {
 	})
 }
 
+// Removes all files and directories under the given path
+func (fm *FileManager) RemoveDirectory(rootPath string) {
+	fm.mu.Lock()
+	defer fm.mu.Unlock()
+
+	rootPath = filepath.Clean(rootPath)
+
+	// Delete files
+	for path, file := range fm.Files {
+		if strings.HasPrefix(path, rootPath) {
+			// Remove from parent directory
+			parentDir := file.Parent
+			if parentDir != nil {
+				delete(parentDir.Files, file.Name)
+			}
+
+			// Remove dependencies
+			for _, f := range fm.Files {
+				delete(f.Dependencies, path)
+				delete(f.Dependents, path)
+			}
+
+			// Remove from global files map
+			delete(fm.Files, path)
+		}
+	}
+
+	// Delete directories
+	if dir := fm.findDirectory(rootPath); dir != nil {
+		if parent := dir.Parent; parent != nil {
+			delete(parent.Subdirs, dir.Name)
+		}
+	}
+}
+
 // AddFile adds or updates a file in the manager (thread-safe)
 // Assumes the directory structure already exists
 func (fm *FileManager) AddFile(path string) *File {
@@ -328,7 +363,7 @@ func (fm *FileManager) AddFile(path string) *File {
 		parentDir.Files[fileName] = file
 	}
 
-	file.Content = nil // Trigger updates
+	file.MarkForUpdate()
 	return file
 }
 

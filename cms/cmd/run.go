@@ -43,6 +43,13 @@ func Run(ctx *core.Context) {
 
 	ctx.FileWatcher.SetRouter(rm)
 
+	// Install the file watcher listener
+	listener, err := core.RegisterFileWatcherListener(ctx.FileWatcher)
+	if err != nil {
+		log.Fatalf("Failed to register file watcher listener: %v", err)
+	}
+	defer listener.Stop()
+
 	// Then run the server
 	err = rm.GetRouter().Run(":" + strconv.Itoa(ctx.Config.Server.Port))
 	if err != nil {

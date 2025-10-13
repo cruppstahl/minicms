@@ -13,10 +13,17 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+// RouterInterface defines the interface that FileWatcher needs from RouterManager
+type RouterInterface interface {
+	AddFile(file *File)
+	RemoveFile(filePath string) error
+	RebuildRouter() error
+}
+
 // FileWatcher watches filesystem changes and updates the FileManager accordingly
 type FileWatcher struct {
 	mu          sync.RWMutex
-	rm          *RouterManager
+	rm          RouterInterface
 	fm          *FileManager
 	watcher     *fsnotify.Watcher
 	watchedDirs map[string]bool // Track which directories are being watched
@@ -69,11 +76,6 @@ type FileWatchEvent struct {
 	Time    time.Time
 }
 
-// interface for receiving file watch events
-type FileWatchSubscriber interface {
-	OnFileEvent(event FileWatchEvent)
-}
-
 // Creates a new file watcher
 func NewFileWatcher(fm *FileManager) (*FileWatcher, error) {
 	if fm == nil {
@@ -97,7 +99,7 @@ func NewFileWatcher(fm *FileManager) (*FileWatcher, error) {
 	}, nil
 }
 
-func (fw *FileWatcher) SetRouter(rm *RouterManager) {
+func (fw *FileWatcher) SetRouter(rm RouterInterface) {
 	fw.rm = rm
 }
 
@@ -201,15 +203,6 @@ func (fw *FileWatcher) handleFileModified(path string) {
 		log.Printf("Failed to get relative path for %s: %v", path, err)
 		return
 	}
-
-	// Update file in FileManager
-	file := fw.fm.AddFile(relPath)
-
-	// Mark file and its dependents for update
-	file.MarkForUpdate()
-
-	// Update all files that need to be reprocessed
-	fw.fm.ProcessUpdatedFiles()
 
 	// Send event to subscribers
 	event := FileWatchEvent{
@@ -347,11 +340,6 @@ func (fw *FileWatcher) handleFileCreated(path string) {
 	}
 
 	if info.IsDir() {
-		// Add new directory to watcher
-		if err := fw.addDirectoryWatch(path); err != nil {
-			log.Printf("Failed to watch new directory %s: %v", path, err)
-		}
-
 		// Send event
 		event := FileWatchEvent{
 			Type:  DirCreated,
@@ -361,21 +349,6 @@ func (fw *FileWatcher) handleFileCreated(path string) {
 		}
 		fw.sendEvent(event)
 	} else {
-		// Add file to FileManager
-		file := fw.fm.AddFile(relPath)
-
-		if file != nil {
-			// Process (a copy of the) new file with plugins
-			file = fw.fm.GetPluginManager().Process(*file, fw.fm)
-
-			// If it's in the content directory, add a route
-			if strings.HasPrefix(file.Path, "content/") {
-				fw.rm.AddFile(file)
-			}
-
-			log.Printf("Processed new file %s", relPath)
-		}
-
 		// Send event
 		event := FileWatchEvent{
 			Type:  FileCreated,
@@ -401,9 +374,6 @@ func (fw *FileWatcher) handleFileDeleted(path string) {
 	fw.mu.RUnlock()
 
 	if wasDir {
-		// Remove directory from watcher
-		fw.removeDirectoryWatch(path)
-
 		// Send event
 		event := FileWatchEvent{
 			Type:  DirDeleted,
@@ -412,31 +382,15 @@ func (fw *FileWatcher) handleFileDeleted(path string) {
 			Time:  time.Now(),
 		}
 		fw.sendEvent(event)
-
-		log.Printf("Removed deleted directory %s from FileManager", relPath)
 	} else {
-		// Remove file from FileManager
-		fw.fm.RemoveFile(relPath)
-
-		// Also remove from RouterManager
-		fw.rm.RemoveFile(relPath)
-
-		// Check if file exists - it should not
-		if fw.fm.GetFile(relPath) == nil {
-			// Send event
-			event := FileWatchEvent{
-				Type:  FileDeleted,
-				Path:  relPath,
-				IsDir: false,
-				Time:  time.Now(),
-			}
-			fw.sendEvent(event)
-
-			log.Printf("File deleted: %s", relPath)
+		// Send event
+		event := FileWatchEvent{
+			Type:  FileDeleted,
+			Path:  relPath,
+			IsDir: false,
+			Time:  time.Now(),
 		}
-
-		// Update all files that need to be reprocessed
-		fw.fm.ProcessUpdatedFiles()
+		fw.sendEvent(event)
 	}
 }
 

@@ -73,12 +73,16 @@
         - Make sure that a route is created!
     [x] Use case: a file is deleted
         - Make sure that the route is deleted!
-    [ ] Use case: a new directory is created
+    [x] Use case: a new directory is created
         - Make sure that all routes are created!
         - Update the watcher as well
-    [ ] Use case: a directory is deleted
+    [x] Use case: a directory is deleted
         - Make sure that all routes are deleted!
         - Update the watcher as well
+    [x] Make sure all tests are running
+
+    [ ] Do a full code review (security, best practices, thread safety,
+        consistent logging and improved developer experience)
 
     [ ] Add more tests about file graph, hierarchy, metadata, plugins, router
         [ ] Systematically add/remove/update files and whole directories
@@ -103,20 +107,26 @@
             from the search index
         [ ] Ignore files that have a ignore-for-search metadata flag
         [ ] If enabled, persist the index on disk
+        [ ] If files or directories are added/removed then the index needs to
+            be updated - use the listener interface?
 
-    [ ] Use metadata to decide whether a file should be added to
-        the search index
     [ ] Create an endpoint to query the index (/q) if the plugin is enabled
+
+[ ] Create actual documentation based on an improved frontend, and include
+    a search field
+    [ ] Come up with a good structure for the documentation
 
 [ ] Support custom 404 page (/content/404.\*), including metadata
     [ ] Add one to crupp.de
     [ ] Add this as a test
+    [ ] Update the documentation
 
 [ ] For runtime errors, show stack traces and debug info in the browser
     - only for DEBUG builds!
     - what should we do for non-debug builds? Silently ignore the errors
         and just log them? but then it would be tricky to detect them, so
-        better scream loud!
+        better scream loud! (but do not print error details)
+    [ ] Update the documentation about the different build modes
 
 [ ] Verify that the navigation can link to completely different directories
     (e.g. blog and documentation are maintained by different teams, and
@@ -127,6 +137,7 @@
         and that paths have to be RELATIVE (in the navigation and
         everywhere else!)
     -> Also, do NOT allow symbolic links! (for security reasons)
+    [ ] Describe this in the documentation
 
 [ ] How about a new plugin to minify the html? (builtin/minifier)
 

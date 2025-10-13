@@ -171,8 +171,9 @@ func TestRouterManager(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "<h1>Test</h1>", w.Body.String())
 
-	// Test removing the route
-	err = rm.RemoveRoute("/test")
+	// Test removing the file (which should remove its routes)
+	delete(ctx.context.FileManager.Files, testFile.Path) // Remove file from FileManager first
+	err = rm.RemoveFile(testFile.Path)
 	assert.NoError(t, err)
 
 	// Route should now return 404
