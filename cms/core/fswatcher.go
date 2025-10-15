@@ -396,6 +396,7 @@ func (fw *FileWatcher) handleFileDeleted(path string) {
 
 // sends an event to the event channel with proper context handling
 func (fw *FileWatcher) sendEvent(event FileWatchEvent) {
+	RecordFileWatcherEvent()
 	select {
 	case fw.eventChan <- event:
 	case <-fw.ctx.Done():

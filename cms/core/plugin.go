@@ -69,6 +69,9 @@ func (pm *PluginManager) RegisterPlugin(plugin Plugin) {
 	sort.Slice(pm.plugins, func(i, j int) bool {
 		return pm.plugins[i].Priority() < pm.plugins[j].Priority()
 	})
+
+	// Update plugin count metric
+	SetPluginsCount(int64(len(pm.plugins)))
 }
 
 // GetPluginsForFile returns all plugins that can process the given file
@@ -125,7 +128,14 @@ func (pm *PluginManager) Process(copy File, fm *FileManager) *File {
 	}
 
 	for _, plugin := range plugins {
+		timer := NewPluginExecutionTimer()
 		result := plugin.Process(ctx)
+		timer.ObserveDuration()
+
+		// Check for plugin errors
+		if !result.Success && result.Error != nil {
+			RecordPluginError()
+		}
 
 		// If plugin modified the file content, update it
 		if result.Modified && result.NewContent != nil {

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"log"
 	"maps"
 	"os"
@@ -117,6 +116,9 @@ func (fm *FileManager) GetPluginManager() *PluginManager {
 
 // Processes all files with their applicable plugins (thread-safe)
 func (fm *FileManager) ProcessAllFiles() {
+	timer := NewFileProcessingTimer()
+	defer timer.ObserveDuration()
+
 	fm.mu.RLock()
 	files := make(map[string]*File, len(fm.Files))
 	maps.Copy(files, fm.Files)
@@ -130,6 +132,9 @@ func (fm *FileManager) ProcessAllFiles() {
 		fm.Files[path] = newFile
 		fm.mu.Unlock()
 	}
+
+	// Update file count metric
+	SetFilesCount(int64(len(files)))
 }
 
 // Processes all files which need to be updated (e.g. because they were modified)
@@ -329,6 +334,7 @@ func (fm *FileManager) RemoveDirectory(rootPath string) {
 // AddFile adds or updates a file in the manager (thread-safe)
 // Assumes the directory structure already exists
 func (fm *FileManager) AddFile(path string) *File {
+	RecordFileOperation()
 	fm.mu.Lock()
 	defer fm.mu.Unlock()
 
@@ -344,8 +350,9 @@ func (fm *FileManager) AddFile(path string) *File {
 	} else {
 		parentDir = fm.findDirectory(dirPath)
 		if parentDir == nil {
-			// This shouldn't happen if WalkDirectory was used properly
-			panic(fmt.Sprintf("parent directory %s does not exist for file %s", dirPath, cleanPath))
+			// Create the parent directory if it doesn't exist
+			log.Printf("Warning: parent directory %s does not exist for file %s, creating it", dirPath, cleanPath)
+			parentDir = fm.createDirectory(dirPath)
 		}
 	}
 
@@ -389,8 +396,9 @@ func (fm *FileManager) RemoveFile(path string) {
 	} else {
 		parentDir = fm.findDirectory(dirPath)
 		if parentDir == nil {
-			// This shouldn't happen if WalkDirectory was used properly
-			panic(fmt.Sprintf("parent directory %s does not exist for file %s", dirPath, cleanPath))
+			// Log error instead of panicking
+			log.Printf("Error: parent directory %s does not exist for file %s", dirPath, cleanPath)
+			return
 		}
 	}
 

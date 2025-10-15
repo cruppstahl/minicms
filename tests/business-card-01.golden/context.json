@@ -162,5 +162,6 @@
     "SiteDirectory": "templates/business-card-01"
   },
   "PluginManager": {},
-  "FileWatcher": null
+  "FileWatcher": null,
+  "Logger": {}
 }

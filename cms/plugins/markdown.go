@@ -3,6 +3,7 @@ package plugins
 import (
 	"bytes"
 	"cms/core"
+	"fmt"
 	"log"
 	"path"
 	"path/filepath"
@@ -56,7 +57,11 @@ func (p *BuiltinMarkdownPlugin) Process(ctx *core.PluginContext) *core.PluginRes
 
 	// Don't attempt to read a file if it is only a redirection
 	if ctx.File.Metadata.RedirectUrl != "" {
-		panic("RedirectUrl should not be set for HTML files")
+		log.Printf("Error: RedirectUrl should not be set for Markdown files: %s", ctx.File.Path)
+		return &core.PluginResult{
+			Success: false,
+			Error:   fmt.Errorf("RedirectUrl should not be set for Markdown files"),
+		}
 	}
 
 	content := ctx.File.ReadFile(ctx.SiteDirectory)

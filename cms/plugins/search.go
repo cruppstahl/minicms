@@ -2,6 +2,8 @@ package plugins
 
 import (
 	"cms/core"
+	"fmt"
+	"log"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -25,10 +27,11 @@ func NewSearchPlugin(params map[string]string) *BuiltinSearchPlugin {
 	// TODO create a configuration option for a persistent index
 	// and try to open it if it exists (index, err := bleve.Open(indexPath)...)
 	index, err := bleve.NewMemOnly(mapping) // use New("index_name") for persistent storage
-	if err == nil {
-		return &BuiltinSearchPlugin{index: index}
+	if err != nil {
+		log.Printf("Failed to create search index: %v", err)
+		return nil
 	}
-	return nil
+	return &BuiltinSearchPlugin{index: index}
 }
 
 func (p *BuiltinSearchPlugin) Name() string {
@@ -59,8 +62,10 @@ func (p *BuiltinSearchPlugin) Process(ctx *core.PluginContext) *core.PluginResul
 	// TODO remove /content from "Path"
 	err := p.index.Index(ctx.File.Path, ctx.File.Content)
 	if err != nil {
+		log.Printf("Failed to index file %s: %v", ctx.File.Path, err)
 		return &core.PluginResult{
 			Success: false,
+			Error:   fmt.Errorf("failed to index file: %w", err),
 		}
 	}
 

@@ -139,5 +139,9 @@
     -> Also, do NOT allow symbolic links! (for security reasons)
     [ ] Describe this in the documentation
 
+[ ] Review the rate limiter - it should be configurable in the config file
+[ ] Review the monitors and endpoints - should be possible to switch them
+    off or only request them from certain interfaces
+
 [ ] How about a new plugin to minify the html? (builtin/minifier)
 

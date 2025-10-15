@@ -2,6 +2,7 @@ package plugins
 
 import (
 	"cms/core"
+	"fmt"
 	"log"
 	"path"
 	"path/filepath"
@@ -40,7 +41,11 @@ func (p *BuiltinHtmlPlugin) Process(ctx *core.PluginContext) *core.PluginResult 
 
 	// Don't attempt to read a file if it is only a redirection
 	if ctx.File.Metadata.RedirectUrl != "" {
-		panic("RedirectUrl should not be set for HTML files")
+		log.Printf("Error: RedirectUrl should not be set for HTML files: %s", ctx.File.Path)
+		return &core.PluginResult{
+			Success: false,
+			Error:   fmt.Errorf("RedirectUrl should not be set for HTML files"),
+		}
 	}
 
 	// Read file content

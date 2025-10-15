@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -50,12 +51,14 @@ func (rm *RouterManager) makeFileHandler(filePath string) gin.HandlerFunc {
 		rm.mu.RUnlock()
 
 		if fm == nil {
+			log.Printf("FileManager is nil for request to %s", c.Request.URL.Path)
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 
 		file := fm.GetFile(filePath)
 		if file == nil {
+			log.Printf("File not found: %s for request to %s", filePath, c.Request.URL.Path)
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
@@ -232,10 +235,20 @@ func (rm *RouterManager) rebuildRouterUnsafe() error {
 	newRouter.Use(gin.Logger())
 	newRouter.Use(gin.Recovery())
 
+	// Add security middleware
+	newRouter.Use(SecurityHeadersMiddleware())
+
+	// Add rate limiting middleware (60 requests per minute)
+	rateLimiter := NewRateLimiter(60)
+	newRouter.Use(rateLimiter.Middleware())
+
 	// Add custom middleware
 	for _, middleware := range rm.middleware {
 		newRouter.Use(middleware)
 	}
+
+	// Add metrics middleware
+	newRouter.Use(GlobalMetrics.MetricsMiddleware())
 
 	// Set the router immediately so addFileUnsafe can use it
 	rm.router = newRouter
@@ -255,6 +268,16 @@ func (rm *RouterManager) rebuildRouterUnsafe() error {
 		staticDir := filepath.Join(rm.ctx.Config.SiteDirectory, "assets")
 		rm.router.Static("/assets", staticDir)
 	}
+
+	// Add monitoring endpoints
+	rm.router.GET("/metrics", GlobalMetrics.MetricsHandler())
+	rm.router.GET("/metrics/prometheus", GlobalMetrics.PrometheusHandler())
+	rm.router.GET("/health", GlobalHealthChecker.HealthHandler())
+	rm.router.GET("/health/live", GlobalHealthChecker.LivenessHandler())
+	rm.router.GET("/health/ready", GlobalHealthChecker.ReadinessHandler())
+
+	// Update metrics
+	SetRoutesCount(int64(len(rm.routes)))
 
 	return nil
 }

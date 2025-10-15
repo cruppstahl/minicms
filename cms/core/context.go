@@ -11,10 +11,14 @@ type Context struct {
 	FileManager   *FileManager
 	PluginManager PluginManager
 	FileWatcher   *FileWatcher
+	Logger        *Logger
 }
 
 func InitializeContext(ctx *Context) error {
 	var err error
+
+	// Initialize logger
+	ctx.Logger = NewLogger(LogLevelInfo)
 
 	// read config.yaml
 	configFilePath := filepath.Join(ctx.Config.SiteDirectory, "config", "site.yaml")
@@ -35,6 +39,9 @@ func InitializeContext(ctx *Context) error {
 	if err != nil {
 		return err
 	}
+
+	// Register default health checks
+	RegisterDefaultHealthChecks(ctx)
 
 	return nil
 }
